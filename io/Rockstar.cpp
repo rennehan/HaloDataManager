@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include "../main.hpp"
+#include "RockstarData.hpp"
 #include "Rockstar.hpp"
 
 void Rockstar::set_file_path(std::string file_path_from_user) {
@@ -16,6 +17,14 @@ void Rockstar::set_header(std::vector<std::string> header_from_file) {
 
 std::vector<std::string> Rockstar::get_header(void) {
     return Rockstar::header_;
+}
+
+void Rockstar::set_column_bit_mask(std::vector<uint8_t> column_bit_mask) {
+    Rockstar::column_bit_mask_ = column_bit_mask;
+}
+
+std::vector<uint8_t> Rockstar::get_column_bit_mask(void) {
+    return Rockstar::column_bit_mask_;
 }
 
 std::vector<std::string> Rockstar::read_header(std::string file_path) {
@@ -55,8 +64,8 @@ std::vector<real> Rockstar::read_cosmology_from_header(std::vector<std::string> 
 
     for (auto line : header) {
         if (line.find("#Om") != std::string::npos) {
-            size_t pos1 = line.find(";");
-            size_t pos2 = line.find(";", pos1 + 1);
+            uint64_t pos1 = line.find(";");
+            uint64_t pos2 = line.find(";", pos1 + 1);
 
             cosmological_parameters.push_back(
                 std::stof(
@@ -99,7 +108,7 @@ real Rockstar::read_scale_factor_from_header(std::vector<std::string> header) {
     real scale_factor = -1.;
     for (auto line : header) {
         if (line.find("#a") != std::string::npos) {
-            size_t pos = line.find("=");
+            uint64_t pos = line.find("=");
             scale_factor = std::stof(
                 line.substr(pos + 1)
             );
@@ -121,8 +130,8 @@ real Rockstar::read_box_size_from_header(std::vector<std::string> header) {
     real box_size = -1.;
     for (auto line : header) {
         if (line.find("#Box") != std::string::npos) {
-            size_t pos1 = line.find(" ", line.find(" ") + 1);
-            size_t pos2 = line.find(" ", pos1 + 1);
+            uint64_t pos1 = line.find(" ", line.find(" ") + 1);
+            uint64_t pos2 = line.find(" ", pos1 + 1);
             box_size = std::stof(
                 line.substr(
                     pos1 + 1,
@@ -141,5 +150,22 @@ real Rockstar::read_box_size_from_header(std::vector<std::string> header) {
 
 real Rockstar::read_box_size_from_header(void) {
     return Rockstar::read_box_size_from_header(Rockstar::header_);
+}
+
+uint64_t Rockstar::read_data_from_file(std::string file_path, std::vector<uint8_t> column_bit_mask) {
+    // TODO read the data into the columns
+    return 0;
+}
+
+uint64_t Rockstar::read_data_from_file(std::vector<uint8_t> column_bit_mask) {
+    return Rockstar::read_data_from_file(Rockstar::file_path_, column_bit_mask);
+}
+
+uint64_t Rockstar::read_data_from_file(std::string file_path) {
+    return Rockstar::read_data_from_file(file_path, Rockstar::column_bit_mask_);
+}
+
+uint64_t Rockstar::read_data_from_file(void) {
+    return Rockstar::read_data_from_file(Rockstar::file_path_);
 }
 
