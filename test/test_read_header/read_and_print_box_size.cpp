@@ -2,11 +2,11 @@
 #include <vector>
 #include <string>
 #include "main.hpp"
-#include "io/Rockstar.hpp"
-#include "io/Rockstar.cpp"
+#include "io/RockstarIO.hpp"
+#include "io/RockstarIO.cpp"
 
 int main(int argc, char* argv[]) {
-    Rockstar rockstar("../rockstar_data.list");
+    RockstarIO rockstar("../rockstar_data.list");
 
     std::vector<std::string> header = rockstar.read_header();
 

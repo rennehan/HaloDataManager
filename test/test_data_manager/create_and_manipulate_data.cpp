@@ -5,8 +5,8 @@
 #include "main.hpp"
 #include "io/RockstarData.hpp"
 #include "io/RockstarData.cpp"
-#include "io/Rockstar.hpp"
-#include "io/Rockstar.cpp"
+#include "io/RockstarIO.hpp"
+#include "io/RockstarIO.cpp"
 
 int main(int argc, char* argv[]) {
     RockstarData rockstar_data;

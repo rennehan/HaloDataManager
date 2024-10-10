@@ -7,7 +7,7 @@
 #ifndef ROCKSTAR_HPP
 #define ROCKSTAR_HPP
 
-class Rockstar {
+class RockstarIO {
 private:
     std::string file_path_;
     std::vector<std::string> header_;
@@ -15,7 +15,7 @@ private:
     RockstarData rockstar_data_;
 
 public:
-    Rockstar(std::string file_path = "") {
+    RockstarIO(std::string file_path = "") {
         file_path_ = file_path;
     }
 
