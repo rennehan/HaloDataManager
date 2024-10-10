@@ -29,14 +29,26 @@ private:
     std::vector<std::shared_ptr<std::vector<real>>> real_loaded_data_;
     std::vector<std::shared_ptr<std::vector<int64_t>>> int_loaded_data_;
 
-    std::map<std::string, uint8_t> real_column_mapping_;
-    std::map<std::string, uint8_t> real_key_mapping_;
+    // Store two maps that can map string keys -> int value and int value -> string keys
+    std::map<std::string, uint32_t> real_column_mapping_str_int_;
+    std::map<uint32_t, std::string> real_column_mapping_int_str_;
+    // The internal mapping is the string -> column map but only for the columns from
+    // the column_bit_mask provided by the user in RockstarIO.
+    std::map<std::string, uint32_t> real_internal_mapping_;
 
-    std::map<std::string, uint8_t> int_column_mapping_;
-    std::map<std::string, uint8_t> int_key_mapping_;
+    std::map<std::string, uint32_t> int_column_mapping_str_int_;
+    std::map<uint32_t, std::string> int_column_mapping_int_str_;
+    std::map<std::string, uint32_t> int_internal_mapping_;
 
+    uint32_t total_columns;
+    uint32_t total_real_loaded_columns;
+    uint32_t total_int_loaded_columns;
 public:
     RockstarData() {
+        total_columns = 0;
+        total_real_loaded_columns = 0;
+        total_int_loaded_columns = 0;
+
         std::vector<std::string> real_keys = {
             "virial_mass", "maximum_velocity", "rms_velocity", "virial_radius", "scale_radius",
             "x", "y", "z", "x_velocity", "y_velocity", "z_velocity", 
@@ -60,8 +72,10 @@ public:
                 column_indexer = 53;
             }
 
-            real_column_mapping_.insert(std::make_pair(real_key, column_indexer));
+            real_column_mapping_str_int_.insert(std::make_pair(real_key, column_indexer));
+            real_column_mapping_int_str_.insert(std::make_pair(column_indexer, real_key));
             column_indexer++;
+            total_columns++;
         }
 
         std::vector<std::string> int_keys = {
@@ -84,22 +98,38 @@ public:
                 column_indexer = 56;
             }
 
-            int_column_mapping_.insert(std::make_pair(int_key, column_indexer));
+            int_column_mapping_str_int_.insert(std::make_pair(int_key, column_indexer));
+            int_column_mapping_int_str_.insert(std::make_pair(column_indexer, int_key));
             column_indexer++;
+            total_columns++;
         }
     }
 
+    uint32_t get_total_columns(void);
+    
     template <typename T>
-    void add_key(std::string key);
+    uint32_t get_total_loaded_columns(void);
+
+    template <typename T, typename U, typename V>
+    T get_column_mapping(U key);
+
+    template <typename T, typename U, typename V>
+    std::map<T, U> get_full_column_mapping(void);
 
     template <typename T>
-    void set_key(std::string key, uint8_t value);
+    void push_value_to_column(std::string key, T data);
 
     template <typename T>
-    uint8_t get_key(std::string key);
+    void add_internal_mapping(std::string key);
 
     template <typename T>
-    void remove_key(std::string key);
+    void set_internal_mapping(std::string key, uint32_t value);
+
+    template <typename T>
+    uint32_t get_internal_mapping(std::string key);
+
+    template <typename T>
+    void remove_internal_mapping(std::string key);
 
     template <typename T>
     std::shared_ptr<std::vector<T>> get_column(std::string key);
@@ -112,19 +142,41 @@ public:
 
     template <typename T>
     void remove_column(std::string key);
+
+    void initialize_empty_data_set(std::shared_ptr<RockstarData> rockstar_data, std::vector<uint32_t> column_bit_mask);
 };
 
-template <>
-void RockstarData::add_key<real>(std::string key);
+// real specializations
 
 template <>
-void RockstarData::set_key<real>(std::string key, uint8_t value);
+uint32_t RockstarData::get_total_loaded_columns<real>(void);
 
 template <>
-uint8_t RockstarData::get_key<real>(std::string key);
+uint32_t RockstarData::get_column_mapping<uint32_t, std::string, real>(std::string key);
 
 template <>
-void RockstarData::remove_key<real>(std::string key);
+std::string RockstarData::get_column_mapping<std::string, uint32_t, real>(uint32_t key);
+
+template <>
+std::map<std::string, uint32_t> RockstarData::get_full_column_mapping<std::string, uint32_t, real>(void);
+
+template <>
+std::map<uint32_t, std::string> RockstarData::get_full_column_mapping<uint32_t, std::string, real>(void);
+
+template <>
+void RockstarData::push_value_to_column<real>(std::string key, real data);
+
+template <>
+void RockstarData::add_internal_mapping<real>(std::string key);
+
+template <>
+void RockstarData::set_internal_mapping<real>(std::string key, uint32_t value);
+
+template <>
+uint32_t RockstarData::get_internal_mapping<real>(std::string key);
+
+template <>
+void RockstarData::remove_internal_mapping<real>(std::string key);
 
 template <>
 std::shared_ptr<std::vector<real>> RockstarData::get_column<real>(std::string key);
@@ -139,18 +191,35 @@ template <>
 void RockstarData::remove_column<real>(std::string key);
 
 // int64_t below
+template <>
+uint32_t RockstarData::get_total_loaded_columns<int64_t>(void);
 
 template <>
-void RockstarData::add_key<int64_t>(std::string key);
+uint32_t RockstarData::get_column_mapping<uint32_t, std::string, int64_t>(std::string key);
 
 template <>
-void RockstarData::set_key<int64_t>(std::string key, uint8_t value);
+std::string RockstarData::get_column_mapping<std::string, uint32_t, int64_t>(uint32_t key);
 
 template <>
-uint8_t RockstarData::get_key<int64_t>(std::string key);
+std::map<std::string, uint32_t> RockstarData::get_full_column_mapping<std::string, uint32_t, int64_t>(void);
 
 template <>
-void RockstarData::remove_key<int64_t>(std::string key);
+std::map<uint32_t, std::string> RockstarData::get_full_column_mapping<uint32_t, std::string, int64_t>(void);
+
+template <>
+void RockstarData::push_value_to_column<int64_t>(std::string key, int64_t data);
+
+template <>
+void RockstarData::add_internal_mapping<int64_t>(std::string key);
+
+template <>
+void RockstarData::set_internal_mapping<int64_t>(std::string key, uint32_t value);
+
+template <>
+uint32_t RockstarData::get_internal_mapping<int64_t>(std::string key);
+
+template <>
+void RockstarData::remove_internal_mapping<int64_t>(std::string key);
 
 template <>
 std::shared_ptr<std::vector<int64_t>> RockstarData::get_column<int64_t>(std::string key);

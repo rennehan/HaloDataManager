@@ -1,3 +1,8 @@
+#include <chrono>
+#include <string>
+#include <vector>
+#include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include "../main.hpp"
 #include "RockstarData.hpp"
@@ -19,11 +24,11 @@ std::vector<std::string> RockstarIO::get_header(void) {
     return RockstarIO::header_;
 }
 
-void RockstarIO::set_column_bit_mask(std::vector<uint8_t> column_bit_mask) {
+void RockstarIO::set_column_bit_mask(std::vector<uint32_t> column_bit_mask) {
     RockstarIO::column_bit_mask_ = column_bit_mask;
 }
 
-std::vector<uint8_t> RockstarIO::get_column_bit_mask(void) {
+std::vector<uint32_t> RockstarIO::get_column_bit_mask(void) {
     return RockstarIO::column_bit_mask_;
 }
 
@@ -152,20 +157,81 @@ real RockstarIO::read_box_size_from_header(void) {
     return RockstarIO::read_box_size_from_header(RockstarIO::header_);
 }
 
-uint64_t RockstarIO::read_data_from_file(std::string file_path, std::vector<uint8_t> column_bit_mask) {
-    // TODO read the data into the columns
-    return 0;
+void RockstarIO::process_file_line(std::string line, std::vector<uint32_t> column_bit_mask, 
+                                   std::shared_ptr<RockstarData> rockstar_data) {
+    uint32_t column_index = 0;
+    std::string field;
+    std::stringstream file_line_stream(line);
+
+    // field contains a string representation of the actual single data point in the file
+    while (getline(file_line_stream, field, ' ')) {
+        if (column_bit_mask[column_index] > 0) {
+            // True is a float, False is a int64_t
+            if (column_bit_mask[column_index] > 1) {
+                rockstar_data->push_value_to_column(
+                    rockstar_data->get_column_mapping<std::string, uint32_t, real>(column_index),
+                    (real)std::stod(field)
+                );
+            }
+            else {
+                rockstar_data->push_value_to_column(
+                    rockstar_data->get_column_mapping<std::string, uint32_t, int64_t>(column_index),
+                    (int64_t)std::strtol(field.c_str(), NULL, 10)
+                );
+            }
+        }
+ 
+        column_index++;
+    }
 }
 
-uint64_t RockstarIO::read_data_from_file(std::vector<uint8_t> column_bit_mask) {
-    return RockstarIO::read_data_from_file(RockstarIO::file_path_, column_bit_mask);
+uint64_t RockstarIO::read_data_from_file(std::shared_ptr<RockstarData> rockstar_data, std::string file_path, std::vector<uint32_t> column_bit_mask) {
+    if (column_bit_mask.empty()) {
+        throw std::runtime_error("A column bit mask must always be supplied by the user.");
+    }
+
+    std::ifstream halo_catalogue_file(file_path);
+    uint32_t line_indexer = 0;
+    uint64_t N_halos = 0;
+
+    rockstar_data->initialize_empty_data_set(rockstar_data, column_bit_mask);
+
+    if (halo_catalogue_file.is_open()) {
+        std::string line;
+
+        auto start_time = std::chrono::high_resolution_clock::now();
+        while (getline(halo_catalogue_file, line)) {
+            if (line.find("#") != std::string::npos) {
+                continue;
+            }
+
+            RockstarIO::process_file_line(line, column_bit_mask, rockstar_data);
+
+            N_halos++;
+        }
+        auto end_time = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<float> seconds_interval = end_time - start_time;
+        float iterations_per_second = (float)N_halos / seconds_interval.count();
+        std::cout << "Duration was " << seconds_interval.count() << " s\n";
+        std::cout << "The speed was " << iterations_per_second << " lines per second\n";
+    }
+    else {
+        throw std::runtime_error("Could not open the provided rockstar file!\n" + file_path);
+    }
+
+    return N_halos;
 }
 
-uint64_t RockstarIO::read_data_from_file(std::string file_path) {
-    return RockstarIO::read_data_from_file(file_path, RockstarIO::column_bit_mask_);
+uint64_t RockstarIO::read_data_from_file(std::shared_ptr<RockstarData> rockstar_data, std::vector<uint32_t> column_bit_mask) {
+    return RockstarIO::read_data_from_file(rockstar_data, RockstarIO::file_path_, column_bit_mask);
 }
 
-uint64_t RockstarIO::read_data_from_file(void) {
-    return RockstarIO::read_data_from_file(RockstarIO::file_path_);
+uint64_t RockstarIO::read_data_from_file(std::shared_ptr<RockstarData> rockstar_data, std::string file_path) {
+    return RockstarIO::read_data_from_file(rockstar_data, file_path, RockstarIO::column_bit_mask_);
+}
+
+uint64_t RockstarIO::read_data_from_file(std::shared_ptr<RockstarData> rockstar_data) {
+    return RockstarIO::read_data_from_file(rockstar_data, RockstarIO::file_path_);
 }
 
