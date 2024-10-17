@@ -38,49 +38,41 @@ public:
     std::vector<std::shared_ptr<std::vector<std::variant<double, float, int64_t>>>> data_;
 
     RockstarData() {
+        auto total_keys = real_keys_.size() + int_keys_.size();
         // assume all columns are real until proven otherwise
-        for (int i = 0; i < real_keys_.size() + int_keys_.size(); i++) {
+        for (auto i = 0; i < total_keys; i++) {
             data_is_real_mask_.push_back(true);
         }
 
-        uint64_t column_indexer = 2;
-        for (auto &real_key : real_keys_) {
-            if (column_indexer == 7) {
-                column_indexer = 8;
-            }
-            else if (column_indexer == 40) {
-                column_indexer = 41;
-            }
-            else if ((column_indexer > 43) && (column_indexer < 52)) {
-                column_indexer = 53;
+        size_t key_indexer = 0;
+        for (uint32_t column_indexer = 0; column_indexer < total_keys; column_indexer++) {
+            // these are the only int64_t columns for Rockstar
+            if (column_indexer == 0 || column_indexer == 1 ||
+                column_indexer == 7 || column_indexer == 40) {
+                continue;
             }
 
-            mapping_int_to_str_.insert(std::make_pair(column_indexer, real_key));
-            mapping_str_to_int_.insert(std::make_pair(real_key, column_indexer));
+            mapping_int_to_str_.insert(std::make_pair(column_indexer, real_keys_.at(key_indexer)));
+            mapping_str_to_int_.insert(std::make_pair(real_keys_.at(key_indexer), column_indexer));
 
-            column_indexer++;
+            key_indexer++;
         }
 
-        column_indexer = 0;
-        for (auto &int_key : int_keys_) {
-            if (column_indexer == 3) {
-                column_indexer = 7;
-            }
-            else if (column_indexer == 8) {
-                column_indexer = 40;
-            }
-            else if (column_indexer == 41) {
-                column_indexer = 44;
-            }
-            else if (column_indexer == 53) {
-                column_indexer = 56;
+        key_indexer = 0;
+        for (uint32_t column_indexer = 0; column_indexer < total_keys; column_indexer++) {
+            if ((column_indexer >= 2) && (column_indexer < 40) && (column_indexer != 7)) {
+                continue;
             }
 
-            mapping_int_to_str_.insert(std::make_pair(column_indexer, int_key));
-            mapping_str_to_int_.insert(std::make_pair(int_key, column_indexer));
+            if (column_indexer > 40) {
+                break;
+            }
 
-            data_is_real_mask_[column_indexer] = false;
-            column_indexer++;
+            mapping_int_to_str_.insert(std::make_pair(column_indexer, int_keys_.at(key_indexer)));
+            mapping_str_to_int_.insert(std::make_pair(int_keys_.at(key_indexer), column_indexer));
+
+            data_is_real_mask_.at(column_indexer) = false;
+            key_indexer++;
         }
     }
 
@@ -88,8 +80,16 @@ public:
     uint32_t get_key(const std::string &column_name);
     uint32_t get_total_keys(void);
     bool is_column_real(uint32_t column_index);
+
+    template <typename T>
+    T data_at(size_t row, uint32_t column);
 };
 
+template <>
+int64_t RockstarData::data_at<int64_t>(size_t row, uint32_t column);
+
+template <>
+real RockstarData::data_at<real>(size_t row, uint32_t column);
 
 #endif
 
