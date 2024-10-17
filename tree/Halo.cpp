@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Halo.hpp"
 
 void Halo::set_id(int64_t id) {

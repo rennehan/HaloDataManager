@@ -1,45 +1,46 @@
 #include <chrono>
 #include <string>
 #include <vector>
+#include <memory>
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <variant>
 #include "../main.hpp"
 #include "RockstarData.hpp"
+#include "ConsistentTreesData.hpp"
 #include "RockstarIO.hpp"
 
-void RockstarIO::set_file_path(std::string file_path_from_user) {
-    RockstarIO::file_path_ = file_path_from_user;
+template <typename Container>
+void RockstarIO<Container>::set_file_name(const std::string &file_name) {
+    file_name_ = file_name;
 }
 
-std::string RockstarIO::get_file_path(void) {
-    return RockstarIO::file_path_;
+template <typename Container>
+std::string RockstarIO<Container>::get_file_name(void) {
+    return file_name_;
 }
 
-void RockstarIO::set_header(std::vector<std::string> header_from_file) {
-    RockstarIO::header_ = header_from_file;
+template <typename Container>
+void RockstarIO<Container>::set_header(const std::vector<std::string> &header) {
+    header_ = header;
 }
 
-std::vector<std::string> RockstarIO::get_header(void) {
-    return RockstarIO::header_;
+template <typename Container>
+std::vector<std::string> RockstarIO<Container>::get_header(void) {
+    return header_;
 }
 
-void RockstarIO::set_column_bit_mask(std::vector<uint32_t> column_bit_mask) {
-    RockstarIO::column_bit_mask_ = column_bit_mask;
-}
-
-std::vector<uint32_t> RockstarIO::get_column_bit_mask(void) {
-    return RockstarIO::column_bit_mask_;
-}
-
-std::vector<std::string> RockstarIO::read_header(std::string file_path) {
+template <typename Container>
+std::vector<std::string> RockstarIO<Container>::read_header(const std::string &file_name) {
     std::vector<std::string> lines;
     std::string line;
-    std::ifstream file(file_path);
+    std::ifstream file(file_name);
 
     if (file.is_open()) {
         while (getline(file, line, '\n')) {
-            /* All of the header fields start with a # character, so stop when we don't find one */
+            // all of the header fields start with a # character, so stop when we don't find one
             if (line.find("#") == std::string::npos) {
                 break;
             }
@@ -48,23 +49,25 @@ std::vector<std::string> RockstarIO::read_header(std::string file_path) {
         }
     }
     else {
-        throw std::runtime_error("Can not open the provided rockstar file!\n" + file_path);
+        throw std::runtime_error("Can not open the provided file!\n" + file_name);
     }
 
     file.close();
 
-    /* Only set the file path if the read was successful. */
-    RockstarIO::set_file_path(file_path);
-    RockstarIO::set_header(lines);
+    // only set the file path if the read was successful.
+    set_file_name(file_name);
+    set_header(lines);
 
     return lines;
 }
 
-std::vector<std::string> RockstarIO::read_header(void) {
-    return RockstarIO::read_header(RockstarIO::file_path_);
+template <typename Container>
+std::vector<std::string> RockstarIO<Container>::read_header(void) {
+    return read_header(file_name_);
 }
 
-std::vector<real> RockstarIO::read_cosmology_from_header(std::vector<std::string> header) {
+template <typename Container>
+std::vector<real> RockstarIO<Container>::read_cosmology_from_header(const std::vector<std::string> &header) {
     std::vector<real> cosmological_parameters;
 
     for (auto line : header) {
@@ -99,17 +102,19 @@ std::vector<real> RockstarIO::read_cosmology_from_header(std::vector<std::string
     }
 
     if (cosmological_parameters.empty()) {
-        throw std::runtime_error("There is no cosmology in the header! Did you try reading the cosmology from a consistent-trees file rather than a rockstar file?"); 
+        throw std::runtime_error("There is no cosmology in the header! Please check the standard format."); 
     }
 
     return cosmological_parameters;
 }
 
-std::vector<real> RockstarIO::read_cosmology_from_header(void) {
-    return RockstarIO::read_cosmology_from_header(RockstarIO::header_);
+template <typename Container>
+std::vector<real> RockstarIO<Container>::read_cosmology_from_header(void) {
+    return read_cosmology_from_header(header_);
 }
 
-real RockstarIO::read_scale_factor_from_header(std::vector<std::string> header) {
+template <typename Container>
+real RockstarIO<Container>::read_scale_factor_from_header(const std::vector<std::string> &header) {
     real scale_factor = -1.;
     for (auto line : header) {
         if (line.find("#a") != std::string::npos) {
@@ -121,17 +126,20 @@ real RockstarIO::read_scale_factor_from_header(std::vector<std::string> header) 
     }
 
     if (scale_factor < 0) {
-        throw std::runtime_error("There is no scale factor in the header! Did you try reading the cosmology from a consistent-trees file rather than a rockstar file?");
+        std::cout << "Scale factor not found in file, setting to -1.\n";
     }
 
+    // return -1 if there is no scale factor (e.g. consistent trees)
     return scale_factor;
 }
 
-real RockstarIO::read_scale_factor_from_header(void) {
-    return RockstarIO::read_scale_factor_from_header(RockstarIO::header_);
+template <typename Container>
+real RockstarIO<Container>::read_scale_factor_from_header(void) {
+    return read_scale_factor_from_header(header_);
 }
 
-real RockstarIO::read_box_size_from_header(std::vector<std::string> header) {
+template <typename Container>
+real RockstarIO<Container>::read_box_size_from_header(const std::vector<std::string> &header) {
     real box_size = -1.;
     for (auto line : header) {
         if (line.find("#Box") != std::string::npos) {
@@ -147,65 +155,62 @@ real RockstarIO::read_box_size_from_header(std::vector<std::string> header) {
     }
 
     if (box_size < 0) {
-        throw std::runtime_error("There is no box size in the header! Did you try reading the cosmology from a consistent-trees file rather than a rockstar file?");
+        throw std::runtime_error("There is no box size in the header! Please check the standard format.");
     }
 
     return box_size;
 }
 
-real RockstarIO::read_box_size_from_header(void) {
-    return RockstarIO::read_box_size_from_header(RockstarIO::header_);
+template <typename Container>
+real RockstarIO<Container>::read_box_size_from_header(void) {
+    return read_box_size_from_header(header_);
 }
 
-void RockstarIO::process_file_line(std::string line, std::vector<uint32_t> column_bit_mask, 
-                                   std::shared_ptr<RockstarData> rockstar_data) {
+template <typename Container>
+void RockstarIO<Container>::process_line_from_file(const std::string &line, Container &container) {
     uint32_t column_index = 0;
     std::string field;
-    std::stringstream file_line_stream(line);
+    std::stringstream line_stream(line);
+
+    auto row = std::make_shared<std::vector<std::variant<double, float, int64_t>>>();
 
     // field contains a string representation of the actual single data point in the file
-    while (getline(file_line_stream, field, ' ')) {
-        if (column_bit_mask[column_index] > 0) {
-            // True is a float, False is a int64_t
-            if (column_bit_mask[column_index] > 1) {
-                rockstar_data->push_value_to_column(
-                    rockstar_data->get_column_mapping<std::string, uint32_t, real>(column_index),
-                    (real)std::stod(field)
-                );
+    while (getline(line_stream, field, ' ')) {
+        if (container.is_column_real(column_index)) {
+            if constexpr (std::is_same_v<real, float>) {
+                row->push_back(std::stof(field));
             }
-            else {
-                rockstar_data->push_value_to_column(
-                    rockstar_data->get_column_mapping<std::string, uint32_t, int64_t>(column_index),
-                    (int64_t)std::strtol(field.c_str(), NULL, 10)
-                );
+            else if constexpr (std::is_same_v<real, double>) {
+                row->push_back(std::stod(field));
             }
+        }
+        else {
+            // all non-real columns are int64_t types
+            row->push_back((int64_t)std::strtol(field.c_str(), NULL, 10));
         }
  
         column_index++;
     }
+
+    container.data_.push_back(row);
 }
 
-uint64_t RockstarIO::read_data_from_file(std::shared_ptr<RockstarData> rockstar_data, std::string file_path, std::vector<uint32_t> column_bit_mask) {
-    if (column_bit_mask.empty()) {
-        throw std::runtime_error("A column bit mask must always be supplied by the user.");
-    }
-
-    std::ifstream halo_catalogue_file(file_path);
+template <typename Container>
+uint64_t RockstarIO<Container>::read_data_from_file(const std::string &file_name, Container &container) {
+    std::ifstream halo_catalog_file(file_name);
     uint32_t line_indexer = 0;
     uint64_t N_halos = 0;
 
-    rockstar_data->initialize_empty_data_set(rockstar_data, column_bit_mask);
-
-    if (halo_catalogue_file.is_open()) {
+    if (halo_catalog_file.is_open()) {
         std::string line;
 
         auto start_time = std::chrono::high_resolution_clock::now();
-        while (getline(halo_catalogue_file, line)) {
+        while (getline(halo_catalog_file, line)) {
             if (line.find("#") != std::string::npos) {
                 continue;
             }
 
-            RockstarIO::process_file_line(line, column_bit_mask, rockstar_data);
+            process_line_from_file(line, container);
 
             N_halos++;
         }
@@ -217,21 +222,17 @@ uint64_t RockstarIO::read_data_from_file(std::shared_ptr<RockstarData> rockstar_
         std::cout << "The speed was " << iterations_per_second << " lines per second\n";
     }
     else {
-        throw std::runtime_error("Could not open the provided rockstar file!\n" + file_path);
+        throw std::runtime_error("Could not open the provided rockstar file!\n" + file_name);
     }
 
     return N_halos;
 }
 
-uint64_t RockstarIO::read_data_from_file(std::shared_ptr<RockstarData> rockstar_data, std::vector<uint32_t> column_bit_mask) {
-    return RockstarIO::read_data_from_file(rockstar_data, RockstarIO::file_path_, column_bit_mask);
+template <typename Container>
+uint64_t RockstarIO<Container>::read_data_from_file(Container &container) {
+    return read_data_from_file(file_name_, container);
 }
 
-uint64_t RockstarIO::read_data_from_file(std::shared_ptr<RockstarData> rockstar_data, std::string file_path) {
-    return RockstarIO::read_data_from_file(rockstar_data, file_path, RockstarIO::column_bit_mask_);
-}
-
-uint64_t RockstarIO::read_data_from_file(std::shared_ptr<RockstarData> rockstar_data) {
-    return RockstarIO::read_data_from_file(rockstar_data, RockstarIO::file_path_);
-}
+template class RockstarIO<RockstarData>;
+template class RockstarIO<ConsistentTreesData>;
 

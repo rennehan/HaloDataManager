@@ -1,9 +1,11 @@
-#include <memory>
-#include <vector>
-#include "Halo.hpp"
 
 #ifndef NODE_HPP
 #define NODE_HPP
+
+#include <memory>
+#include <vector>
+#include "../main.hpp"
+#include "Halo.hpp"
 
 // we need to share the "current" node as the parent of the added child
 class Node : public std::enable_shared_from_this<Node> {

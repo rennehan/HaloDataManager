@@ -1,6 +1,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include "Halo.hpp"
 #include "Node.hpp"
 
 void Node::add_child(std::shared_ptr<Node> child) {

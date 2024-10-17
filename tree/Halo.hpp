@@ -1,7 +1,9 @@
-#include <vector>
 
 #ifndef HALO_HPP
 #define HALO_HPP
+
+#include <vector>
+#include "../main.hpp"
 
 class Halo {
 private:

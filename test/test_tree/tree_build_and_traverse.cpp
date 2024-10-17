@@ -5,14 +5,7 @@
 #include <memory>
 #include <set>
 #include "main.hpp"
-#include "io/RockstarData.hpp"
-#include "io/RockstarData.cpp"
-#include "io/RockstarIO.hpp"
-#include "io/RockstarIO.cpp"
-#include "tree/Halo.hpp"
-#include "tree/Halo.cpp"
 #include "tree/Node.hpp"
-#include "tree/Node.cpp"
 
 // depth first search
 void open_node(const std::shared_ptr<Node> &node_to_visit, std::shared_ptr<std::set<int64_t>> &set) {
