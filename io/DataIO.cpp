@@ -8,32 +8,30 @@
 #include <stdexcept>
 #include <variant>
 #include "../main.hpp"
-#include "RockstarData.hpp"
-#include "ConsistentTreesData.hpp"
-#include "RockstarIO.hpp"
+#include "DataIO.hpp"
 
 template <typename Container>
-void RockstarIO<Container>::set_file_name(const std::string &file_name) {
+void DataIO<Container>::set_file_name(const std::string &file_name) {
     file_name_ = file_name;
 }
 
 template <typename Container>
-std::string RockstarIO<Container>::get_file_name(void) {
+std::string DataIO<Container>::get_file_name(void) {
     return file_name_;
 }
 
 template <typename Container>
-void RockstarIO<Container>::set_header(const std::vector<std::string> &header) {
+void DataIO<Container>::set_header(const std::vector<std::string> &header) {
     header_ = header;
 }
 
 template <typename Container>
-std::vector<std::string> RockstarIO<Container>::get_header(void) {
+std::vector<std::string> DataIO<Container>::get_header(void) {
     return header_;
 }
 
 template <typename Container>
-std::vector<std::string> RockstarIO<Container>::read_header(const std::string &file_name) {
+std::vector<std::string> DataIO<Container>::read_header(const std::string &file_name) {
     std::vector<std::string> lines;
     std::string line;
     std::ifstream file(file_name);
@@ -62,12 +60,12 @@ std::vector<std::string> RockstarIO<Container>::read_header(const std::string &f
 }
 
 template <typename Container>
-std::vector<std::string> RockstarIO<Container>::read_header(void) {
+std::vector<std::string> DataIO<Container>::read_header(void) {
     return read_header(file_name_);
 }
 
 template <typename Container>
-std::vector<real> RockstarIO<Container>::read_cosmology_from_header(const std::vector<std::string> &header) {
+std::vector<real> DataIO<Container>::read_cosmology_from_header(const std::vector<std::string> &header) {
     std::vector<real> cosmological_parameters;
 
     for (auto line : header) {
@@ -109,12 +107,12 @@ std::vector<real> RockstarIO<Container>::read_cosmology_from_header(const std::v
 }
 
 template <typename Container>
-std::vector<real> RockstarIO<Container>::read_cosmology_from_header(void) {
+std::vector<real> DataIO<Container>::read_cosmology_from_header(void) {
     return read_cosmology_from_header(header_);
 }
 
 template <typename Container>
-real RockstarIO<Container>::read_scale_factor_from_header(const std::vector<std::string> &header) {
+real DataIO<Container>::read_scale_factor_from_header(const std::vector<std::string> &header) {
     real scale_factor = -1.;
     for (auto line : header) {
         if (line.find("#a") != std::string::npos) {
@@ -134,12 +132,12 @@ real RockstarIO<Container>::read_scale_factor_from_header(const std::vector<std:
 }
 
 template <typename Container>
-real RockstarIO<Container>::read_scale_factor_from_header(void) {
+real DataIO<Container>::read_scale_factor_from_header(void) {
     return read_scale_factor_from_header(header_);
 }
 
 template <typename Container>
-real RockstarIO<Container>::read_box_size_from_header(const std::vector<std::string> &header) {
+real DataIO<Container>::read_box_size_from_header(const std::vector<std::string> &header) {
     real box_size = -1.;
     for (auto line : header) {
         if (line.find("#Box") != std::string::npos) {
@@ -162,12 +160,12 @@ real RockstarIO<Container>::read_box_size_from_header(const std::vector<std::str
 }
 
 template <typename Container>
-real RockstarIO<Container>::read_box_size_from_header(void) {
+real DataIO<Container>::read_box_size_from_header(void) {
     return read_box_size_from_header(header_);
 }
 
 template <typename Container>
-void RockstarIO<Container>::process_line_from_file(const std::string &line, Container &container) {
+void DataIO<Container>::process_line_from_file(const std::string &line, Container &container) {
     uint32_t column_index = 0;
     std::string field;
     std::stringstream line_stream(line);
@@ -196,7 +194,7 @@ void RockstarIO<Container>::process_line_from_file(const std::string &line, Cont
 }
 
 template <typename Container>
-uint64_t RockstarIO<Container>::read_data_from_file(const std::string &file_name, Container &container) {
+uint64_t DataIO<Container>::read_data_from_file(const std::string &file_name, Container &container) {
     std::ifstream halo_catalog_file(file_name);
     uint32_t line_indexer = 0;
     uint64_t N_halos = 0;
@@ -229,10 +227,8 @@ uint64_t RockstarIO<Container>::read_data_from_file(const std::string &file_name
 }
 
 template <typename Container>
-uint64_t RockstarIO<Container>::read_data_from_file(Container &container) {
+uint64_t DataIO<Container>::read_data_from_file(Container &container) {
     return read_data_from_file(file_name_, container);
 }
 
-template class RockstarIO<RockstarData>;
-template class RockstarIO<ConsistentTreesData>;
 

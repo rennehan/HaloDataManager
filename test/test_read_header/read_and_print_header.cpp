@@ -2,11 +2,10 @@
 #include <vector>
 #include <string>
 #include "main.hpp"
-#include "io/RockstarData.hpp"
-#include "io/RockstarIO.hpp"
+#include "io/DataIO.hpp"
 
 int main(int argc, char* argv[]) {
-    RockstarIO<RockstarData> rockstar("../rockstar_data.list");
+    DataIO<DataContainer<RockstarData>> rockstar("../rockstar_data.list");
 
     std::vector<std::string> header = rockstar.read_header();
 

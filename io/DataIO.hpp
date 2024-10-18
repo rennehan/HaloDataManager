@@ -1,20 +1,21 @@
 
-#ifndef ROCKSTAR_HPP
-#define ROCKSTAR_HPP
+#ifndef DATAIO_HPP
+#define DATAIO_HPP
 
 #include <vector>
 #include <string>
 #include <fstream>
 #include "../main.hpp"
+#include "DataContainer.hpp"
 
 template <typename Container>
-class RockstarIO {
+class DataIO {
 private:
     std::string file_name_;
     std::vector<std::string> header_;
 
 public:
-    RockstarIO(std::string file_name = "") {
+    DataIO(std::string file_name = "") {
         file_name_ = file_name;
     }
 
@@ -40,6 +41,9 @@ public:
     uint64_t read_data_from_file(const std::string &file_name, Container &container);
     uint64_t read_data_from_file(Container &container);
 };
+
+template class DataIO<DataContainer<RockstarData>>;
+template class DataIO<DataContainer<ConsistentTreesData>>;
 
 #endif
 
