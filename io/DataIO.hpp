@@ -20,26 +20,26 @@ public:
     }
 
     void set_file_name(const std::string &file_name);
-    std::string get_file_name(void);
+    std::string get_file_name(void) const;
 
     void set_header(const std::vector<std::string> &header);
-    std::vector<std::string> get_header(void);
+    std::vector<std::string> get_header(void) const;
 
     std::vector<std::string> read_header(const std::string &file_name);
     std::vector<std::string> read_header(void);
 
-    std::vector<real> read_cosmology_from_header(const std::vector<std::string> &header);
-    std::vector<real> read_cosmology_from_header(void);
+    std::vector<real> read_cosmology_from_header(const std::vector<std::string> &header) const;
+    std::vector<real> read_cosmology_from_header(void) const;
 
-    real read_scale_factor_from_header(const std::vector<std::string> &header);
-    real read_scale_factor_from_header(void);
+    real read_scale_factor_from_header(const std::vector<std::string> &header) const;
+    real read_scale_factor_from_header(void) const;
 
-    real read_box_size_from_header(const std::vector<std::string> &header);
-    real read_box_size_from_header(void);
+    real read_box_size_from_header(const std::vector<std::string> &header) const;
+    real read_box_size_from_header(void) const;
 
-    void process_line_from_file(const std::string &line, Container &container);
-    uint64_t read_data_from_file(const std::string &file_name, Container &container);
-    uint64_t read_data_from_file(Container &container);
+    void process_line_from_file(const std::string &line, Container &container) const;
+    uint64_t read_data_from_file(const std::string &file_name, Container &container) const;
+    uint64_t read_data_from_file(Container &container) const;
 };
 
 template class DataIO<DataContainer<RockstarData>>;

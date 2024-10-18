@@ -10,7 +10,7 @@ void Node::add_child(std::shared_ptr<Node> child) {
     child->halo.set_parent_id(Node::shared_from_this()->halo.get_id());
 }
 
-std::shared_ptr<Node> Node::get_parent(void) {
+std::shared_ptr<Node> Node::get_parent(void) const {
     if (auto shared_parent = Node::parent_.lock()) {
         return shared_parent;
     }
@@ -23,7 +23,7 @@ void Node::set_parent(std::shared_ptr<Node> parent) {
     Node::parent_ = parent;
 }
 
-void Node::info(void) {
+void Node::info(void) const {
     std::cout << std::endl;
     std::cout << "-----------------------------\n";
     std::cout << "Parent information\n";

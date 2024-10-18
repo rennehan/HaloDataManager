@@ -32,8 +32,8 @@ private:
     static std::vector<std::string> real_keys_;
     static std::vector<std::string> int_keys_;
 
-    std::unordered_map<uint32_t, std::string> mapping_int_to_str_;
-    std::unordered_map<std::string, uint32_t> mapping_str_to_int_;
+    std::unordered_map<size_t, std::string> mapping_int_to_str_;
+    std::unordered_map<std::string, size_t> mapping_str_to_int_;
 
     std::vector<bool> data_is_real_mask_;
 public:
@@ -41,17 +41,17 @@ public:
 
     DataContainer();
 
-    std::string get_key(const uint32_t &column_index);
-    uint32_t get_key(const std::string &column_name);
-    uint32_t get_total_keys(void);
-    bool is_column_real(uint32_t column_index);
+    std::string get_key(const size_t &column_index) const;
+    size_t get_key(const std::string &column_name) const;
+    size_t get_total_keys(void) const;
+    bool is_column_real(const size_t column_index) const;
 
     // C++ doesn't allow specialization of member functions in templated
     // classes unless the entire class is specialized. That can lead to a
     // huge number of specializations so we are just going to use
     // overloading.
-    void data_at(int64_t &value, size_t row, uint32_t column);
-    void data_at(real &value, size_t row, uint32_t column);
+    void data_at(int64_t &value, const size_t row, const size_t column) const;
+    void data_at(real &value, const size_t row, const size_t column) const;
 };
 
 template class DataContainer<RockstarData>;

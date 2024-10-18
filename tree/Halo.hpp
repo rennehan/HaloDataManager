@@ -16,13 +16,13 @@ public:
 
     Halo() { }
 
-    void set_id(int64_t id);
-    int64_t get_id(void);
+    void set_id(const int64_t id);
+    int64_t get_id(void) const;
 
-    void set_parent_id(int64_t parent_id);
-    int64_t get_parent_id(void);
+    void set_parent_id(const int64_t parent_id);
+    int64_t get_parent_id(void) const;
     
-    void info(void);
+    void info(void) const;
 };
 
 #endif

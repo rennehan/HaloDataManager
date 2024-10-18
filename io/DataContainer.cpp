@@ -132,7 +132,7 @@ DataContainer<RockstarData>::DataContainer() {
     }
 
     size_t key_indexer = 0;
-    for (uint32_t column_indexer = 0; column_indexer < total_keys; column_indexer++) {
+    for (size_t column_indexer = 0; column_indexer < total_keys; column_indexer++) {
         // these are the only int64_t columns for Rockstar
         if (column_indexer == 0 || column_indexer == 1 ||
             column_indexer == 7 || column_indexer == 40) {
@@ -146,7 +146,7 @@ DataContainer<RockstarData>::DataContainer() {
     }
 
     key_indexer = 0;
-    for (uint32_t column_indexer = 0; column_indexer < total_keys; column_indexer++) {
+    for (size_t column_indexer = 0; column_indexer < total_keys; column_indexer++) {
         if ((column_indexer >= 2) && (column_indexer < 40) && (column_indexer != 7)) {
             continue;
         }
@@ -172,7 +172,7 @@ DataContainer<ConsistentTreesData>::DataContainer() {
     }
 
     size_t key_indexer = 0;
-    for (uint32_t column_indexer = 0; column_indexer < total_keys; column_indexer++) {
+    for (size_t column_indexer = 0; column_indexer < total_keys; column_indexer++) {
         // these are the only int64_t columns for Consistent Trees
         if ((column_indexer >= 0 && column_indexer <= 9) ||
             (column_indexer >= 27 && column_indexer <= 34) ||
@@ -187,7 +187,7 @@ DataContainer<ConsistentTreesData>::DataContainer() {
     }
 
     key_indexer = 0;
-    for (uint32_t column_indexer = 0; column_indexer < total_keys; column_indexer++) {
+    for (size_t column_indexer = 0; column_indexer < total_keys; column_indexer++) {
         if ((column_indexer > 9 && column_indexer < 27) ||
             (column_indexer == 35) ||
             (column_indexer > 36)) {
@@ -203,32 +203,32 @@ DataContainer<ConsistentTreesData>::DataContainer() {
 }
 
 template <typename DataFileFormat>
-std::string DataContainer<DataFileFormat>::get_key(const uint32_t &column_index) {
+std::string DataContainer<DataFileFormat>::get_key(const size_t &column_index) const {
     return mapping_int_to_str_.at(column_index);
 }
 
 template <typename DataFileFormat>
-uint32_t DataContainer<DataFileFormat>::get_key(const std::string &column_name) {
+size_t DataContainer<DataFileFormat>::get_key(const std::string &column_name) const {
     return mapping_str_to_int_.at(column_name);
 }
 
 template <typename DataFileFormat>
-uint32_t DataContainer<DataFileFormat>::get_total_keys(void) {
+size_t DataContainer<DataFileFormat>::get_total_keys(void) const {
     return real_keys_.size() + int_keys_.size();
 }
 
 template <typename DataFileFormat>
-bool DataContainer<DataFileFormat>::is_column_real(uint32_t column_index) {
+bool DataContainer<DataFileFormat>::is_column_real(const size_t column_index) const {
     return data_is_real_mask_.at(column_index);
 }
 
 template <typename DataFileFormat>
-void DataContainer<DataFileFormat>::data_at(int64_t &value, size_t row, uint32_t column) {
+void DataContainer<DataFileFormat>::data_at(int64_t &value, const size_t row, const size_t column) const {
     value = std::get<int64_t>(data_.at(row)->at(column));
 }
 
 template <typename DataFileFormat>
-void DataContainer<DataFileFormat>::data_at(real &value, size_t row, uint32_t column) {
+void DataContainer<DataFileFormat>::data_at(real &value, const size_t row, const size_t column) const {
     value = std::get<real>(data_.at(row)->at(column));
 }
 

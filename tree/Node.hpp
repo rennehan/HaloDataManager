@@ -20,9 +20,9 @@ public:
     Node() { }
 
     void add_child(std::shared_ptr<Node> child);
-    std::shared_ptr<Node> get_parent(void);
+    std::shared_ptr<Node> get_parent(void) const;
     void set_parent(std::shared_ptr<Node> parent);
-    void info(void);
+    void info(void) const;
 };
 
 #endif

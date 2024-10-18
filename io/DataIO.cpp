@@ -16,7 +16,7 @@ void DataIO<Container>::set_file_name(const std::string &file_name) {
 }
 
 template <typename Container>
-std::string DataIO<Container>::get_file_name(void) {
+std::string DataIO<Container>::get_file_name(void) const {
     return file_name_;
 }
 
@@ -26,7 +26,7 @@ void DataIO<Container>::set_header(const std::vector<std::string> &header) {
 }
 
 template <typename Container>
-std::vector<std::string> DataIO<Container>::get_header(void) {
+std::vector<std::string> DataIO<Container>::get_header(void) const {
     return header_;
 }
 
@@ -65,7 +65,7 @@ std::vector<std::string> DataIO<Container>::read_header(void) {
 }
 
 template <typename Container>
-std::vector<real> DataIO<Container>::read_cosmology_from_header(const std::vector<std::string> &header) {
+std::vector<real> DataIO<Container>::read_cosmology_from_header(const std::vector<std::string> &header) const {
     std::vector<real> cosmological_parameters;
 
     for (auto line : header) {
@@ -107,12 +107,12 @@ std::vector<real> DataIO<Container>::read_cosmology_from_header(const std::vecto
 }
 
 template <typename Container>
-std::vector<real> DataIO<Container>::read_cosmology_from_header(void) {
+std::vector<real> DataIO<Container>::read_cosmology_from_header(void) const {
     return read_cosmology_from_header(header_);
 }
 
 template <typename Container>
-real DataIO<Container>::read_scale_factor_from_header(const std::vector<std::string> &header) {
+real DataIO<Container>::read_scale_factor_from_header(const std::vector<std::string> &header) const {
     real scale_factor = -1.;
     for (auto line : header) {
         if (line.find("#a") != std::string::npos) {
@@ -132,12 +132,12 @@ real DataIO<Container>::read_scale_factor_from_header(const std::vector<std::str
 }
 
 template <typename Container>
-real DataIO<Container>::read_scale_factor_from_header(void) {
+real DataIO<Container>::read_scale_factor_from_header(void) const {
     return read_scale_factor_from_header(header_);
 }
 
 template <typename Container>
-real DataIO<Container>::read_box_size_from_header(const std::vector<std::string> &header) {
+real DataIO<Container>::read_box_size_from_header(const std::vector<std::string> &header) const {
     real box_size = -1.;
     for (auto line : header) {
         if (line.find("#Box") != std::string::npos) {
@@ -160,13 +160,13 @@ real DataIO<Container>::read_box_size_from_header(const std::vector<std::string>
 }
 
 template <typename Container>
-real DataIO<Container>::read_box_size_from_header(void) {
+real DataIO<Container>::read_box_size_from_header(void) const {
     return read_box_size_from_header(header_);
 }
 
 template <typename Container>
-void DataIO<Container>::process_line_from_file(const std::string &line, Container &container) {
-    uint32_t column_index = 0;
+void DataIO<Container>::process_line_from_file(const std::string &line, Container &container) const {
+    size_t column_index = 0;
     std::string field;
     std::stringstream line_stream(line);
 
@@ -194,9 +194,9 @@ void DataIO<Container>::process_line_from_file(const std::string &line, Containe
 }
 
 template <typename Container>
-uint64_t DataIO<Container>::read_data_from_file(const std::string &file_name, Container &container) {
+uint64_t DataIO<Container>::read_data_from_file(const std::string &file_name, Container &container) const {
     std::ifstream halo_catalog_file(file_name);
-    uint32_t line_indexer = 0;
+    size_t line_indexer = 0;
     uint64_t N_halos = 0;
 
     if (halo_catalog_file.is_open()) {
@@ -227,7 +227,7 @@ uint64_t DataIO<Container>::read_data_from_file(const std::string &file_name, Co
 }
 
 template <typename Container>
-uint64_t DataIO<Container>::read_data_from_file(Container &container) {
+uint64_t DataIO<Container>::read_data_from_file(Container &container) const {
     return read_data_from_file(file_name_, container);
 }
 
