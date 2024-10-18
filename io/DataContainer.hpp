@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <memory>
 #include <vector>
+#include <map>
 #include <unordered_map>
 #include <string>
 #include <variant>
@@ -29,11 +30,12 @@
 template <typename DataFileFormat>
 class DataContainer {
 private:
-    static std::vector<std::string> real_keys_;
-    static std::vector<std::string> int_keys_;
+    // key -> column index
+    static std::map<std::string, size_t> real_keys_;
+    static std::map<std::string, size_t> int_keys_;
 
-    std::unordered_map<size_t, std::string> mapping_int_to_str_;
-    std::unordered_map<std::string, size_t> mapping_str_to_int_;
+    std::unordered_map<size_t, std::string> keys_int_to_str_;
+    std::unordered_map<std::string, size_t> keys_str_to_int_;
 
     std::vector<bool> data_is_real_mask_;
 public:
