@@ -37,7 +37,7 @@ public:
     real read_box_size_from_header(const std::vector<std::string> &header) const;
     real read_box_size_from_header(void) const;
 
-    void process_line_from_file(const std::string &line, Container &container) const;
+    bool process_line_from_file(const std::string &line, Container &container) const;
     size_t read_data_from_file(const std::string &file_name, Container &container) const;
     size_t read_data_from_file(Container &container) const;
 };

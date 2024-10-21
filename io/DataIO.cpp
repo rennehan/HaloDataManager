@@ -165,7 +165,7 @@ real DataIO<Container>::read_box_size_from_header(void) const {
 }
 
 template <typename Container>
-void DataIO<Container>::process_line_from_file(const std::string &line, Container &container) const {
+bool DataIO<Container>::process_line_from_file(const std::string &line, Container &container) const {
     std::string field;
     std::stringstream line_stream(line);
 
@@ -176,7 +176,7 @@ void DataIO<Container>::process_line_from_file(const std::string &line, Containe
     if (single_number_stream >> test_number) {
         std::string remaining;
         if (!(single_number_stream >> remaining)) {
-            return;
+            return false;
         }
     }
 
@@ -208,6 +208,8 @@ void DataIO<Container>::process_line_from_file(const std::string &line, Containe
     }
 
     container.data_.push_back(row);
+
+    return true;
 }
 
 template <typename Container>
@@ -225,9 +227,9 @@ size_t DataIO<Container>::read_data_from_file(const std::string &file_name, Cont
                 continue;
             }
 
-            process_line_from_file(line, container);
-
-            N_lines++;
+            if (process_line_from_file(line, container)) {
+                N_lines++;
+            }
         }
         auto end_time = std::chrono::high_resolution_clock::now();
 
