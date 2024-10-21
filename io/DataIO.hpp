@@ -38,8 +38,8 @@ public:
     real read_box_size_from_header(void) const;
 
     void process_line_from_file(const std::string &line, Container &container) const;
-    uint64_t read_data_from_file(const std::string &file_name, Container &container) const;
-    uint64_t read_data_from_file(Container &container) const;
+    size_t read_data_from_file(const std::string &file_name, Container &container) const;
+    size_t read_data_from_file(Container &container) const;
 };
 
 template class DataIO<DataContainer<RockstarData>>;

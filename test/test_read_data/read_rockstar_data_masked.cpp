@@ -8,14 +8,13 @@
 
 int main(int argc, char* argv[]) {
     DataIO<DataContainer<RockstarData>> data_io("../rockstar_data.list");
-    DataContainer<RockstarData> rockstar_data;
-    data_io.read_data_from_file(rockstar_data);
 
-    // check the types of all of the keys
-    size_t total_keys = rockstar_data.get_total_keys();
-    for (auto i = 0; i < total_keys; i++) {
-        std::cout << "Index: " << i << " Key: " << rockstar_data.get_internal_key(i) << std::endl;
-    }
+    std::vector<std::string> column_mask;
+    column_mask.push_back("virial_mass");
+    column_mask.push_back("id");
+
+    DataContainer<RockstarData> rockstar_data(column_mask);
+    data_io.read_data_from_file(rockstar_data);
 
     // What is the mvir key?
     std::cout << "mvir key is " << rockstar_data.get_internal_key("virial_mass") << std::endl;

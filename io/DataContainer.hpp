@@ -34,15 +34,32 @@ private:
     static std::map<std::string, size_t> real_keys_;
     static std::map<std::string, size_t> int_keys_;
 
+    // converts column file index to internal string representation
+    // and vice versa
     std::unordered_map<size_t, std::string> keys_int_to_str_;
     std::unordered_map<std::string, size_t> keys_str_to_int_;
 
+    // indicates whether a column file index or internal string
+    // representation should be read into internal memory
+    std::unordered_map<size_t, bool> column_mask_int_to_bool_;
+    std::unordered_map<std::string, bool> column_mask_str_to_bool_;
+
+    // converts external data file column indices and internal
+    // column names to internal data column indices
+    std::unordered_map<size_t, size_t> keys_internal_int_to_int_;
+    std::unordered_map<std::string, size_t> keys_internal_str_to_int_;
+
+    // is true for real number and false for int64_t
     std::vector<bool> data_is_real_mask_;
 public:
     std::vector<std::shared_ptr<std::vector<std::variant<double, float, int64_t>>>> data_;
 
-    DataContainer();
+    DataContainer(const std::vector<std::string> &provided_column_mask = std::vector<std::string>());
 
+    bool column_mask(const size_t &column_index) const;
+    bool column_mask(const std::string &column_key) const;
+    size_t get_internal_key(const size_t &column_index) const;
+    size_t get_internal_key(const std::string &column_name) const;
     std::string get_key(const size_t &column_index) const;
     size_t get_key(const std::string &column_name) const;
     size_t get_total_keys(void) const;

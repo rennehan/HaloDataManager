@@ -70,8 +70,8 @@ std::vector<real> DataIO<Container>::read_cosmology_from_header(const std::vecto
 
     for (auto line : header) {
         if (line.find("#Om") != std::string::npos) {
-            uint64_t pos1 = line.find(";");
-            uint64_t pos2 = line.find(";", pos1 + 1);
+            size_t pos1 = line.find(";");
+            size_t pos2 = line.find(";", pos1 + 1);
 
             cosmological_parameters.push_back(
                 std::stof(
@@ -116,7 +116,7 @@ real DataIO<Container>::read_scale_factor_from_header(const std::vector<std::str
     real scale_factor = -1.;
     for (auto line : header) {
         if (line.find("#a") != std::string::npos) {
-            uint64_t pos = line.find("=");
+            size_t pos = line.find("=");
             scale_factor = std::stof(
                 line.substr(pos + 1)
             );
@@ -141,8 +141,8 @@ real DataIO<Container>::read_box_size_from_header(const std::vector<std::string>
     real box_size = -1.;
     for (auto line : header) {
         if (line.find("#Box") != std::string::npos) {
-            uint64_t pos1 = line.find(" ", line.find(" ") + 1);
-            uint64_t pos2 = line.find(" ", pos1 + 1);
+            size_t pos1 = line.find(" ", line.find(" ") + 1);
+            size_t pos2 = line.find(" ", pos1 + 1);
             box_size = std::stof(
                 line.substr(
                     pos1 + 1,
@@ -166,27 +166,44 @@ real DataIO<Container>::read_box_size_from_header(void) const {
 
 template <typename Container>
 void DataIO<Container>::process_line_from_file(const std::string &line, Container &container) const {
-    size_t column_index = 0;
     std::string field;
     std::stringstream line_stream(line);
 
+    // sometimes data files have rows with only a single number
+    // so ignore them
+    std::stringstream single_number_stream(line);
+    double test_number;
+    if (single_number_stream >> test_number) {
+        std::string remaining;
+        if (!(single_number_stream >> remaining)) {
+            return;
+        }
+    }
+
     auto row = std::make_shared<std::vector<std::variant<double, float, int64_t>>>();
 
+    size_t column_index = 0;
     // field contains a string representation of the actual single data point in the file
     while (getline(line_stream, field, ' ')) {
-        if (container.is_column_real(column_index)) {
-            if constexpr (std::is_same_v<real, float>) {
-                row->push_back(std::stof(field));
+        if (field.empty()) {
+            continue;
+        }
+
+        if (container.column_mask(column_index)) {
+            if (container.is_column_real(column_index)) {
+                if constexpr (std::is_same_v<real, float>) {
+                    row->push_back(std::stof(field));
+                }
+                else if constexpr (std::is_same_v<real, double>) {
+                    row->push_back(std::stod(field));
+                }
             }
-            else if constexpr (std::is_same_v<real, double>) {
-                row->push_back(std::stod(field));
+            else {
+                // all non-real columns are int64_t types
+                row->push_back((int64_t)std::strtol(field.c_str(), NULL, 10));
             }
         }
-        else {
-            // all non-real columns are int64_t types
-            row->push_back((int64_t)std::strtol(field.c_str(), NULL, 10));
-        }
- 
+
         column_index++;
     }
 
@@ -194,10 +211,10 @@ void DataIO<Container>::process_line_from_file(const std::string &line, Containe
 }
 
 template <typename Container>
-uint64_t DataIO<Container>::read_data_from_file(const std::string &file_name, Container &container) const {
+size_t DataIO<Container>::read_data_from_file(const std::string &file_name, Container &container) const {
     std::ifstream halo_catalog_file(file_name);
     size_t line_indexer = 0;
-    uint64_t N_halos = 0;
+    size_t N_lines = 0;
 
     if (halo_catalog_file.is_open()) {
         std::string line;
@@ -210,24 +227,24 @@ uint64_t DataIO<Container>::read_data_from_file(const std::string &file_name, Co
 
             process_line_from_file(line, container);
 
-            N_halos++;
+            N_lines++;
         }
         auto end_time = std::chrono::high_resolution_clock::now();
 
         std::chrono::duration<float> seconds_interval = end_time - start_time;
-        float iterations_per_second = (float)N_halos / seconds_interval.count();
+        float iterations_per_second = (float)N_lines / seconds_interval.count();
         std::cout << "Duration was " << seconds_interval.count() << " s\n";
         std::cout << "The speed was " << iterations_per_second << " lines per second\n";
     }
     else {
-        throw std::runtime_error("Could not open the provided rockstar file!\n" + file_name);
+        throw std::runtime_error("Could not open the provided file!\n" + file_name);
     }
 
-    return N_halos;
+    return N_lines;
 }
 
 template <typename Container>
-uint64_t DataIO<Container>::read_data_from_file(Container &container) const {
+size_t DataIO<Container>::read_data_from_file(Container &container) const {
     return read_data_from_file(file_name_, container);
 }
 
