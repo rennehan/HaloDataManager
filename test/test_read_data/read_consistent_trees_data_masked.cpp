@@ -26,7 +26,8 @@ int main(int argc, char* argv[]) {
     int64_t descendant_id;
     size_t id_key = consistent_trees_data.get_internal_key("id");
     size_t descendant_id_key = consistent_trees_data.get_internal_key("descendant_id");
-    // print the first 10 id values
+    
+    // print all of the final nodes in the tree
     for (size_t i = 0; i < N_halos; i++) {
         consistent_trees_data.data_at(descendant_id, i, descendant_id_key);
         if (descendant_id == -1) {
