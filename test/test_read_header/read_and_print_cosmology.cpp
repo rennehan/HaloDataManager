@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::string> header = rockstar.read_header();
 
-    std::vector<real> cosmology = rockstar.read_cosmology_from_header();
+    std::vector<double> cosmology = rockstar.read_cosmology_from_header();
 
     for (auto &cosmology_parameter : cosmology) {
         std::cout << "Cosmology parameter value (not passed): " << cosmology_parameter << std::endl;

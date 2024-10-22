@@ -31,7 +31,7 @@ template <typename DataFileFormat>
 class DataContainer {
 private:
     // key -> column index
-    static std::map<std::string, size_t> real_keys_;
+    static std::map<std::string, size_t> double_keys_;
     static std::map<std::string, size_t> int_keys_;
 
     // converts column file index to internal string representation
@@ -49,8 +49,8 @@ private:
     std::unordered_map<size_t, size_t> keys_internal_int_to_int_;
     std::unordered_map<std::string, size_t> keys_internal_str_to_int_;
 
-    // is true for real number and false for int64_t
-    std::vector<bool> data_is_real_mask_;
+    // is true for double number and false for int64_t
+    std::vector<bool> data_is_double_mask_;
 public:
     std::vector<std::shared_ptr<std::vector<std::variant<double, float, int64_t>>>> data_;
 
@@ -63,14 +63,14 @@ public:
     std::string get_key(const size_t &column_index) const;
     size_t get_key(const std::string &column_name) const;
     size_t get_total_keys(void) const;
-    bool is_column_real(const size_t column_index) const;
+    bool is_column_double(const size_t column_index) const;
 
     // C++ doesn't allow specialization of member functions in templated
     // classes unless the entire class is specialized. That can lead to a
     // huge number of specializations so we are just going to use
     // overloading.
     void data_at(int64_t &value, const size_t row, const size_t column) const;
-    void data_at(real &value, const size_t row, const size_t column) const;
+    void data_at(double &value, const size_t row, const size_t column) const;
 };
 
 template class DataContainer<RockstarData>;

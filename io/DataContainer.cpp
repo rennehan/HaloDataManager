@@ -9,7 +9,7 @@
 #include "DataContainer.hpp"
 
 template <>
-std::map<std::string, size_t> DataContainer<RockstarData>::real_keys_ = {
+std::map<std::string, size_t> DataContainer<RockstarData>::double_keys_ = {
             {"virial_mass"              , 2},
             {"maximum_velocity"         , 3},
             {"rms_velocity"             , 4},
@@ -59,7 +59,7 @@ std::map<std::string, size_t> DataContainer<RockstarData>::int_keys_ = {
             {"type"                     , 40}};
 
 template <>
-std::map<std::string, size_t> DataContainer<ConsistentTreesData>::real_keys_ = {
+std::map<std::string, size_t> DataContainer<ConsistentTreesData>::double_keys_ = {
             {"scale"                            , 0},
             {"descendant_scale"                 , 2},
             {"sam_virial_mass"                  , 9},
@@ -138,24 +138,24 @@ DataContainer<DataFileFormat>::DataContainer(const std::vector<std::string> &pro
         std::cout << "Using provided column mask to read specific columns from data file.\n";
     }
 
-    auto total_keys = real_keys_.size() + int_keys_.size();
+    auto total_keys = double_keys_.size() + int_keys_.size();
     for (auto i = 0; i < total_keys; i++) {
-        data_is_real_mask_.push_back(true);
+        data_is_double_mask_.push_back(true);
     }
 
     size_t duplicate_count = 0;
-    for (const auto &[key, val] : real_keys_) {
+    for (const auto &[key, val] : double_keys_) {
         // check duplicates, speed isn't an issue here 
         // so we do not have to keep track of what we have checked
         duplicate_count = 0;
-        for (const auto &[key_mirror, val_mirror] : real_keys_) {
+        for (const auto &[key_mirror, val_mirror] : double_keys_) {
             if (val == val_mirror) {
                 duplicate_count++;
             }
 
             // self, and other
             if (duplicate_count == 2) {
-                throw std::runtime_error("There are duplicate columns in the static real_keys_ at " + key_mirror + ".\n");
+                throw std::runtime_error("There are duplicate columns in the static double_keys_ at " + key_mirror + ".\n");
             }
         }
 
@@ -180,11 +180,11 @@ DataContainer<DataFileFormat>::DataContainer(const std::vector<std::string> &pro
             }
         }
 
-        // check real_keys_ for duplicates
-        for (const auto &[key_mirror, val_mirror] : real_keys_) {
+        // check double_keys_ for duplicates
+        for (const auto &[key_mirror, val_mirror] : double_keys_) {
             // there absolutely cannot be a match in the other key list
             if (val == val_mirror) {
-                throw std::runtime_error("There are duplicate columns across static real_keys_ and int_keys_ at " + key_mirror + ".\n");
+                throw std::runtime_error("There are duplicate columns across static double_keys_ and int_keys_ at " + key_mirror + ".\n");
             }
         }
 
@@ -194,7 +194,7 @@ DataContainer<DataFileFormat>::DataContainer(const std::vector<std::string> &pro
         column_mask_int_to_bool_.insert(std::make_pair(val, default_column_flag));
         column_mask_str_to_bool_.insert(std::make_pair(key, default_column_flag));
 
-        data_is_real_mask_.at((size_t)val) = false;
+        data_is_double_mask_.at((size_t)val) = false;
     }
 
     std::vector<size_t> column_indices;
@@ -264,12 +264,12 @@ size_t DataContainer<DataFileFormat>::get_key(const std::string &column_name) co
 
 template <typename DataFileFormat>
 size_t DataContainer<DataFileFormat>::get_total_keys(void) const {
-    return real_keys_.size() + int_keys_.size();
+    return double_keys_.size() + int_keys_.size();
 }
 
 template <typename DataFileFormat>
-bool DataContainer<DataFileFormat>::is_column_real(const size_t column_index) const {
-    return data_is_real_mask_.at(column_index);
+bool DataContainer<DataFileFormat>::is_column_double(const size_t column_index) const {
+    return data_is_double_mask_.at(column_index);
 }
 
 template <typename DataFileFormat>
@@ -278,8 +278,8 @@ void DataContainer<DataFileFormat>::data_at(int64_t &value, const size_t row, co
 }
 
 template <typename DataFileFormat>
-void DataContainer<DataFileFormat>::data_at(real &value, const size_t row, const size_t column) const {
-    value = std::get<real>(data_.at(row)->at(column));
+void DataContainer<DataFileFormat>::data_at(double &value, const size_t row, const size_t column) const {
+    value = std::get<double>(data_.at(row)->at(column));
 }
 
 

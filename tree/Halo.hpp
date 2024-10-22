@@ -11,8 +11,8 @@ private:
     int64_t parent_id_;
 
 public:
-    real mvir_;
-    std::vector<real> position_;
+    double mvir_;
+    double scale_;
 
     Halo() { }
 

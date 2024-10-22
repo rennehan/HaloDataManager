@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::string> header = rockstar.read_header();
 
-    real box_size = rockstar.read_box_size_from_header();
+    double box_size = rockstar.read_box_size_from_header();
     std::cout << "Box size from header (not passed): " << box_size << std::endl;
 
     box_size = rockstar.read_box_size_from_header(header);

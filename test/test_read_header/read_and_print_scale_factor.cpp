@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<std::string> header = rockstar.read_header();
 
-    real scale_factor = rockstar.read_scale_factor_from_header();
+    double scale_factor = rockstar.read_scale_factor_from_header();
     std::cout << "Scale factor from header (not passed): " << scale_factor << std::endl;
 
     scale_factor = rockstar.read_scale_factor_from_header(header);

@@ -18,7 +18,8 @@ int64_t Halo::get_parent_id(void) const {
 }
 
 void Halo::info(void) const {
-    std::cout << "ID \t\t" << (int64_t)Halo::id_ << "\n";
-    std::cout << "Parent ID \t" << (int64_t)Halo::parent_id_ << "\n";
-    std::cout << "Mass \t\t" << (real)Halo::mvir_ << "\n"; 
+    std::cout << "ID \t\t" << (int64_t)id_ << "\n";
+    std::cout << "Parent ID \t" << (int64_t)parent_id_ << "\n";
+    std::cout << "Mass \t\t" << (double)mvir_ << "\n";
+    std::cout << "Scale \t\t" << (double)scale_ << "\n"; 
 }

@@ -19,9 +19,9 @@ int main(int argc, char* argv[]) {
     // What is the mvir key?
     std::cout << "mvir key is " << consistent_trees_data.get_internal_key("virial_mass") << std::endl;
 
-    std::cout << "mvir at 0 is " << std::get<real>(consistent_trees_data.data_.at(0)->at(consistent_trees_data.get_internal_key("virial_mass"))) << std::endl;
+    std::cout << "mvir at 0 is " << std::get<double>(consistent_trees_data.data_.at(0)->at(consistent_trees_data.get_internal_key("virial_mass"))) << std::endl;
 
-    real mvir;
+    double mvir;
     size_t mvir_key = consistent_trees_data.get_internal_key("virial_mass");
     // print the first 10 mvir values
     for (size_t i = 0; i < 10; i++) {

@@ -65,8 +65,8 @@ std::vector<std::string> DataIO<Container>::read_header(void) {
 }
 
 template <typename Container>
-std::vector<real> DataIO<Container>::read_cosmology_from_header(const std::vector<std::string> &header) const {
-    std::vector<real> cosmological_parameters;
+std::vector<double> DataIO<Container>::read_cosmology_from_header(const std::vector<std::string> &header) const {
+    std::vector<double> cosmological_parameters;
 
     for (auto line : header) {
         if (line.find("#Om") != std::string::npos) {
@@ -107,13 +107,13 @@ std::vector<real> DataIO<Container>::read_cosmology_from_header(const std::vecto
 }
 
 template <typename Container>
-std::vector<real> DataIO<Container>::read_cosmology_from_header(void) const {
+std::vector<double> DataIO<Container>::read_cosmology_from_header(void) const {
     return read_cosmology_from_header(header_);
 }
 
 template <typename Container>
-real DataIO<Container>::read_scale_factor_from_header(const std::vector<std::string> &header) const {
-    real scale_factor = -1.;
+double DataIO<Container>::read_scale_factor_from_header(const std::vector<std::string> &header) const {
+    double scale_factor = -1.;
     for (auto line : header) {
         if (line.find("#a") != std::string::npos) {
             size_t pos = line.find("=");
@@ -132,13 +132,13 @@ real DataIO<Container>::read_scale_factor_from_header(const std::vector<std::str
 }
 
 template <typename Container>
-real DataIO<Container>::read_scale_factor_from_header(void) const {
+double DataIO<Container>::read_scale_factor_from_header(void) const {
     return read_scale_factor_from_header(header_);
 }
 
 template <typename Container>
-real DataIO<Container>::read_box_size_from_header(const std::vector<std::string> &header) const {
-    real box_size = -1.;
+double DataIO<Container>::read_box_size_from_header(const std::vector<std::string> &header) const {
+    double box_size = -1.;
     for (auto line : header) {
         if (line.find("#Box") != std::string::npos) {
             size_t pos1 = line.find(" ", line.find(" ") + 1);
@@ -160,7 +160,7 @@ real DataIO<Container>::read_box_size_from_header(const std::vector<std::string>
 }
 
 template <typename Container>
-real DataIO<Container>::read_box_size_from_header(void) const {
+double DataIO<Container>::read_box_size_from_header(void) const {
     return read_box_size_from_header(header_);
 }
 
@@ -190,16 +190,11 @@ bool DataIO<Container>::process_line_from_file(const std::string &line, Containe
         }
 
         if (container.column_mask(column_index)) {
-            if (container.is_column_real(column_index)) {
-                if constexpr (std::is_same_v<real, float>) {
-                    row->push_back(std::stof(field));
-                }
-                else if constexpr (std::is_same_v<real, double>) {
-                    row->push_back(std::stod(field));
-                }
+            if (container.is_column_double(column_index)) {
+                row->push_back(std::stod(field));
             }
             else {
-                // all non-real columns are int64_t types
+                // all non-double columns are int64_t types
                 row->push_back((int64_t)std::strtol(field.c_str(), NULL, 10));
             }
         }
