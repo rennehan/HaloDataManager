@@ -5,7 +5,6 @@
 #include <map>
 #include <unordered_map>
 #include <algorithm>
-#include "../main.hpp"
 #include "DataContainer.hpp"
 
 template <>

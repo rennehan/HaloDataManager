@@ -4,7 +4,6 @@
 #include <cassert>
 #include <memory>
 #include <unordered_set>
-#include "main.hpp"
 #include "tree/Node.hpp"
 #include "io/DataIO.hpp"
 

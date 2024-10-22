@@ -7,7 +7,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <variant>
-#include "../main.hpp"
 #include "DataIO.hpp"
 
 template <typename Container>

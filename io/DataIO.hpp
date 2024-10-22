@@ -5,7 +5,6 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include "../main.hpp"
 #include "DataContainer.hpp"
 
 template <typename Container>

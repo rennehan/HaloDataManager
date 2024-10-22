@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <vector>
-#include "../main.hpp"
 #include "Halo.hpp"
 
 // we need to share the "current" node as the parent of the added child

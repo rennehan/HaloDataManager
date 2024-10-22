@@ -2,11 +2,10 @@
 #include <vector>
 #include <string>
 #include <cassert>
-#include "main.hpp"
 #include "io/DataIO.hpp"
 
 int main(int argc, char* argv[]) {
-    DataIO<DataContainer<ConsistentTreesData>> data_io("../consistent_trees_data.list");
+    DataIO<DataContainer<ConsistentTreesData>> data_io("../data/tree_0_0_0.dat");
 
     std::vector<std::string> column_mask;
     column_mask.push_back("id");

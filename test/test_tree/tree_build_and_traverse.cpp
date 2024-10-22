@@ -4,7 +4,6 @@
 #include <cassert>
 #include <memory>
 #include <set>
-#include "main.hpp"
 #include "tree/Node.hpp"
 
 // depth first search

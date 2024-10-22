@@ -2,12 +2,10 @@
 #include <vector>
 #include <string>
 #include <cassert>
-#include "main.hpp"
-#include "io/DataContainer.hpp"
 #include "io/DataIO.hpp"
 
 int main(int argc, char* argv[]) {
-    DataIO<DataContainer<RockstarData>> data_io("../rockstar_data.list");
+    DataIO<DataContainer<RockstarData>> data_io("../data/out_163.list");
     DataContainer<RockstarData> rockstar_data;
     data_io.read_data_from_file(rockstar_data);
 

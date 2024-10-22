@@ -9,7 +9,9 @@
 #include <unordered_map>
 #include <string>
 #include <variant>
-#include "../main.hpp"
+
+struct RockstarData { };
+struct ConsistentTreesData { };
 
 /**
  * The DataContainer class will define and store the actual data from the file internally.

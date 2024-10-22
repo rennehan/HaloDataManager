@@ -2,12 +2,10 @@
 #include <vector>
 #include <string>
 #include <cassert>
-#include "main.hpp"
-#include "io/DataContainer.hpp"
 #include "io/DataIO.hpp"
 
 int main(int argc, char* argv[]) {
-    DataIO<DataContainer<RockstarData>> data_io("../rockstar_data.list");
+    DataIO<DataContainer<RockstarData>> data_io("../data/out_163.list");
 
     std::vector<std::string> column_mask;
     column_mask.push_back("virial_mass");
