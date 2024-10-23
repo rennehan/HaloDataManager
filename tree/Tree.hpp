@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include <chrono>
 #include <iostream>
+#include <queue>
 #include "Node.hpp"
 #include "../io/DataContainer.hpp"
 
@@ -38,6 +39,20 @@ public:
                                       const std::shared_ptr<Node> &node,
                                       const size_t key,
                                       std::vector<T> &value_list) const;
+
+    template <typename T, typename Comparison, typename DataFileFormat>
+    void recursive_breadth_first_search(const DataContainer<DataFileFormat> &data,
+                                        std::queue<std::shared_ptr<Node>> &to_visit,
+                                        const size_t key, const T query,
+                                        Comparison compare,
+                                        std::vector<std::shared_ptr<Node>> &nodes) const;
+
+    template <typename T, typename Comparison, typename DataFileFormat>
+    std::vector<std::shared_ptr<Node>>
+    breadth_first_search(const DataContainer<DataFileFormat> &data,
+                         const std::shared_ptr<Node> &node,
+                         const size_t key, const T query,
+                         Comparison compare) const;
 };
 
 template <typename DataFileFormat>
@@ -127,6 +142,48 @@ void Tree::traverse_most_massive_branch(const DataContainer<DataFileFormat> &dat
         traverse_most_massive_branch<T, DataFileFormat>(data, node->children_[0], 
                                                         key, value_list);
     }
+}
+
+template <typename T, typename Comparison, typename DataFileFormat>
+void Tree::recursive_breadth_first_search(const DataContainer<DataFileFormat> &data,
+                                          std::queue<std::shared_ptr<Node>> &to_visit,
+                                          const size_t key, const T query,
+                                          Comparison compare,
+                                          std::vector<std::shared_ptr<Node>> &nodes) const {
+    double value;
+    while (!to_visit.empty()) {
+        for (auto &child : to_visit.front()->children_) {
+            to_visit.push(child);
+        }
+
+        data.data_at(value, to_visit.front()->get_data_row(), key);
+        if (compare(value, query)) {
+            nodes.push_back(to_visit.front());
+        }
+
+        to_visit.pop();
+
+        recursive_breadth_first_search(data, to_visit, key, query,
+                                       compare, nodes);
+    }
+}
+
+template <typename T, typename Comparison, typename DataFileFormat>
+std::vector<std::shared_ptr<Node>>
+Tree::breadth_first_search(const DataContainer<DataFileFormat> &data,
+                           const std::shared_ptr<Node> &node,
+                           const size_t key, const T query,
+                           Comparison compare) const {
+    // stack of the the visited nodes
+    std::queue<std::shared_ptr<Node>> to_visit;
+    to_visit.push(node);
+
+    std::vector<std::shared_ptr<Node>> nodes;
+
+    recursive_breadth_first_search(data, to_visit, key, query, 
+                                   compare, nodes);
+    
+    return nodes;
 }
 
 #endif
