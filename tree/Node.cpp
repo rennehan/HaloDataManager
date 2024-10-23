@@ -23,6 +23,14 @@ void Node::set_parent(std::shared_ptr<Node> parent) {
     parent_ = parent;
 }
 
+size_t Node::get_data_row(void) const {
+    return data_row_;
+}
+
+void Node::set_data_row(const size_t row) {
+    data_row_ = row;
+}
+
 void Node::info(void) const {
     std::cout << std::endl;
     std::cout << "-----------------------------\n";
