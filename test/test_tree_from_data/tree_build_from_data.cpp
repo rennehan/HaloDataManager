@@ -21,10 +21,10 @@ int main(int argc, char* argv[]) {
     int64_t id, descendant_id;
     double scale, virial_mass;
 
-    size_t id_key = consistent_trees_data.get_internal_key("id");
-    size_t descendant_id_key = consistent_trees_data.get_internal_key("descendant_id");
-    size_t scale_key = consistent_trees_data.get_internal_key("scale");
-    size_t virial_mass_key = consistent_trees_data.get_internal_key("virial_mass");
+    auto id_key = consistent_trees_data.get_internal_key("id");
+    auto descendant_id_key = consistent_trees_data.get_internal_key("descendant_id");
+    auto scale_key = consistent_trees_data.get_internal_key("scale");
+    auto virial_mass_key = consistent_trees_data.get_internal_key("virial_mass");
 
     std::unordered_map<std::string, size_t> keys = {
         {"id", id_key},
@@ -59,42 +59,25 @@ int main(int argc, char* argv[]) {
             next_root_node_index = N_halos_in_tree;
         }
 
+        consistent_trees_data.data_at(id, root_node_index, keys.at("id"));
+        auto root_node = std::make_shared<Node>(root_node_index, nullptr, id);
         forest.push_back(
-            std::make_unique<Tree>(
-                std::make_shared<Node>(),
-                root_node_index,
-                next_root_node_index
-            )
-        );
-
-        forest.back()->root_node_->set_parent(nullptr);
-        forest.back()->root_node_->set_data_row(root_node_index);
-
-        forest.back()->root_node_->halo.set_parent_id(-1);
-        forest.back()->root_node_->halo.set_id(
-            [&]() {
-                consistent_trees_data.data_at(id, root_node_index, keys.at("id"));
-                return id;
-            }()
+            std::make_unique<Tree>(root_node, root_node_index, 
+                                   next_root_node_index)
         );
     }
 
     std::cout << "Building first tree." << std::endl;
-    forest[0]->build_tree(consistent_trees_data, keys);
+    forest[0]->build_tree(consistent_trees_data);
 
     std::cout << "Traversing the first root node.\n";
     auto node = forest[0]->root_node_;
 
     int64_t root_node_id = node->halo.get_id();
-    double root_node_scale = node->halo.scale_;
-    std::cout << "\n\nRoot node has ID = " << root_node_id;
-    std::cout << " and scale = " << root_node_scale << std::endl;
+    std::cout << "\n\nRoot node has ID = " << root_node_id << std::endl;
 
     assert(close_enough((int64_t)16181, root_node_id));
     test_passed("node->halo.get_id()");
-
-    assert(close_enough(1.0, root_node_scale));
-    test_passed("node->halo.scale_");
 
     std::vector<int64_t> accepted_children_ids = {
         11097, 11098, 11099, 11100
@@ -104,22 +87,18 @@ int main(int argc, char* argv[]) {
     for (auto &child : node->children_) {
         int64_t child_id = child->halo.get_id();
         int64_t child_parent_id = child->halo.get_parent_id();
-        double child_scale = child->halo.scale_;
 
         std::cout << "Child #" << (int)indexer << " has ID = " << child_id;
-        std::cout << ", PID = " << child_parent_id;
-        std::cout << " and scale = " << child_scale << std::endl;
+        std::cout << ", PID = " << child_parent_id << std::endl;
 
         size_t grandchild_indexer = 0;
         for (auto &grandchild : child->children_) {
             int64_t grandchild_id = grandchild->halo.get_id();
             int64_t grandchild_parent_id = grandchild->halo.get_parent_id();
-            double grandchild_scale = grandchild->halo.scale_;
 
             std::cout << "\tGrandchild #" << (int)grandchild_indexer;
             std::cout << " has ID = " << grandchild_id;
-            std::cout << ", PID = " << grandchild_parent_id;
-            std::cout << ", and scale = " << grandchild_scale << std::endl;
+            std::cout << ", PID = " << grandchild_parent_id << std::endl;
         }
     }
 
@@ -127,7 +106,6 @@ int main(int argc, char* argv[]) {
     for (auto &child : node->children_) {
         int64_t child_id = child->halo.get_id();
         int64_t child_parent_id = child->halo.get_parent_id();
-        double child_scale = child->halo.scale_;
 
         assert(close_enough(accepted_children_ids[indexer], child_id));
         test_passed("child->halo.get_id()", indexer);
@@ -135,14 +113,10 @@ int main(int argc, char* argv[]) {
         assert(close_enough((int64_t)16181, child_parent_id));
         test_passed("child->halo.get_parent_id()", indexer);
 
-        assert(close_enough(0.97211, child_scale));
-        test_passed("child->halo.scale_", indexer);
-
         size_t grandchild_indexer = 0;
         for (auto &grandchild : child->children_) {
             int64_t grandchild_id = grandchild->halo.get_id();
             int64_t grandchild_parent_id = grandchild->halo.get_parent_id();
-            double grandchild_scale = grandchild->halo.scale_;
 
             if (indexer == 0) {
                 assert(
@@ -166,9 +140,6 @@ int main(int argc, char* argv[]) {
 
             assert(close_enough(accepted_children_ids[indexer], grandchild_parent_id));
             test_passed("grandchild->halo.get_parent_id()", grandchild_indexer);
-
-            assert(close_enough(0.94499, grandchild_scale));
-            test_passed("grandchild->halo.scale_", grandchild_indexer);
 
             grandchild_indexer++;
         }

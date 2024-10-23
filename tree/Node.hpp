@@ -18,7 +18,20 @@ public:
     std::weak_ptr<Node> parent_;
     std::vector<std::shared_ptr<Node>> children_;
 
-    Node() { }
+    Node(const size_t node_index, 
+         const std::shared_ptr<Node> parent, const int64_t id) {
+        data_row_ = node_index;
+
+        set_parent(parent);
+        if (parent != nullptr) {
+            halo.set_parent_id(parent->halo.get_id());
+        }
+        else {
+            halo.set_parent_id(-1);
+        }
+
+        halo.set_id(id);
+    }
 
     void add_child(std::shared_ptr<Node> child);
     std::shared_ptr<Node> get_parent(void) const;

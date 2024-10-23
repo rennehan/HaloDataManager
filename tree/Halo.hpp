@@ -10,9 +10,6 @@ private:
     int64_t parent_id_;
 
 public:
-    double mvir_;
-    double scale_;
-
     Halo() { }
 
     void set_id(const int64_t id);
@@ -43,8 +40,6 @@ inline int64_t Halo::get_parent_id(void) const {
 inline void Halo::info(void) const {
     std::cout << "ID \t\t" << (int64_t)id_ << "\n";
     std::cout << "Parent ID \t" << (int64_t)parent_id_ << "\n";
-    std::cout << "Mass \t\t" << (double)mvir_ << "\n";
-    std::cout << "Scale \t\t" << (double)scale_ << "\n"; 
 }
 
 #endif

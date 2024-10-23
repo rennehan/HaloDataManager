@@ -33,7 +33,6 @@ void open_node(const std::shared_ptr<Node> &node_to_visit, std::shared_ptr<std::
 int main(int argc, char* argv[]) {
     auto parent_node = std::make_shared<Node>();
     parent_node->set_parent(nullptr);
-    parent_node->halo.mvir_ = 1.e10;
     parent_node->halo.set_id(0);
     parent_node->halo.set_parent_id(-1);
 
@@ -41,19 +40,16 @@ int main(int argc, char* argv[]) {
     auto child_nodeB = std::make_shared<Node>();
     auto grandchild_nodeA = std::make_shared<Node>();
 
-    child_nodeA->halo.mvir_ = 5.e9;
     child_nodeA->halo.set_id(1);
     child_nodeA->halo.set_parent_id(0);
     std::cout << "Initial child_nodeA\n";
     child_nodeA->info();
 
-    child_nodeB->halo.mvir_ = 1.e9;
     child_nodeB->halo.set_id(2);
     child_nodeB->halo.set_parent_id(0);
     std::cout << "Initial child_nodeB\n";
     child_nodeB->info();
 
-    grandchild_nodeA->halo.mvir_ = 5.e8;
     grandchild_nodeA->halo.set_id(3);
     grandchild_nodeA->halo.set_parent_id(1);
     std::cout << "Initial grandchild_nodeA\n";
