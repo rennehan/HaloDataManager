@@ -68,12 +68,8 @@ public:
     size_t get_total_keys(void) const;
     bool is_column_double(const size_t column_index) const;
 
-    // C++ doesn't allow specialization of member functions in templated
-    // classes unless the entire class is specialized. That can lead to a
-    // huge number of specializations so we are just going to use
-    // overloading.
-    void data_at(int64_t &value, const size_t row, const size_t column) const;
-    void data_at(double &value, const size_t row, const size_t column) const;
+    template <typename T>
+    T get_data(const size_t row, const size_t column) const;
 };
 
 template class DataContainer<RockstarData>;
@@ -210,7 +206,7 @@ DataContainer<DataFileFormat>::DataContainer(const std::vector<std::string> &pro
     }
 
     auto total_keys = double_keys_.size() + int_keys_.size();
-    for (auto i = 0; i < total_keys; i++) {
+    for (size_t i = 0; i < total_keys; i++) {
         data_is_double_mask_.push_back(true);
     }
 
@@ -344,13 +340,9 @@ bool DataContainer<DataFileFormat>::is_column_double(const size_t column_index) 
 }
 
 template <typename DataFileFormat>
-void DataContainer<DataFileFormat>::data_at(int64_t &value, const size_t row, const size_t column) const {
-    value = std::get<int64_t>(data_.at(row)->at(column));
-}
-
-template <typename DataFileFormat>
-void DataContainer<DataFileFormat>::data_at(double &value, const size_t row, const size_t column) const {
-    value = std::get<double>(data_.at(row)->at(column));
+template <typename T>
+T DataContainer<DataFileFormat>::get_data(const size_t row, const size_t column) const {
+    return std::get<T>(data_.at(row)->at(column));
 }
 
 #endif

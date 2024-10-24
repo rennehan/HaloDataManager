@@ -20,9 +20,6 @@ int main(int argc, char* argv[]) {
     DataContainer<ConsistentTreesData> data(data_mask);
     size_t N_halos_in_tree = io.read_data_from_file(data);
 
-    int64_t id, descendant_id;
-    double scale, virial_mass;
-
     size_t id_key = data.get_internal_key("id");
     size_t descendant_id_key = data.get_internal_key("descendant_id");
     size_t scale_key = data.get_internal_key("scale");
@@ -37,15 +34,12 @@ int main(int argc, char* argv[]) {
 
     // find the first root node in the data file
     size_t root_node_index, next_root_node_index;
-    for (auto i = 0; i < N_halos_in_tree; i++) {
-        data.data_at(descendant_id, i, descendant_id_key);
-        if (descendant_id == -1) {
+    for (size_t i = 0; i < N_halos_in_tree; i++) {
+        if (data.get_data<int64_t>(i, descendant_id_key) == -1) {
             root_node_index = i;
 
             for (auto j = i + 1; j < N_halos_in_tree; j++) {
-                data.data_at(descendant_id, j, descendant_id_key);
-
-                if (descendant_id == -1) {
+                if (data.get_data<int64_t>(j, descendant_id_key) == -1) {
                     next_root_node_index = j;
                     break;
                 }
@@ -58,8 +52,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Root node is at row #" << root_node_index << std::endl;
     std::cout << "Next root node is at row #" << next_root_node_index << std::endl;
 
-    data.data_at(id, root_node_index, id_key);
-
+    int64_t id;
+    id = data.get_data<int64_t>(root_node_index, id_key);
     auto root_node = std::make_shared<Node>(root_node_index, nullptr, id);
 
     // prepare and build the Tree object

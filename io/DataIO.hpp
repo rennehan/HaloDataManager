@@ -246,7 +246,6 @@ bool DataIO<Container>::process_line_from_file(const std::string &line, Containe
 template <typename Container>
 size_t DataIO<Container>::read_data_from_file(const std::string &file_name, Container &container) const {
     std::ifstream halo_catalog_file(file_name);
-    size_t line_indexer = 0;
     size_t N_lines = 0;
 
     if (halo_catalog_file.is_open()) {

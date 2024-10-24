@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     DataContainer<ConsistentTreesData> data(data_mask);
     auto N_halos_in_tree = io.read_data_from_file(data);
 
-    int64_t id, descendant_id;
+    int64_t id;
     double scale, virial_mass;
 
     auto id_key = data.get_internal_key("id");
@@ -40,10 +40,8 @@ int main(int argc, char* argv[]) {
     std::vector<size_t> root_node_row_numbers;
 
     // find all root nodes
-    for (auto row_number = 0; row_number < N_halos_in_tree; row_number++) {
-        // fill descendant_id
-        data.data_at(descendant_id, row_number, descendant_id_key);
-        if (descendant_id == -1) {
+    for (size_t row_number = 0; row_number < N_halos_in_tree; row_number++) {
+        if (data.get_data<int64_t>(row_number, descendant_id_key) == -1) {
             root_node_row_numbers.push_back(row_number);
         }
     }
@@ -62,7 +60,7 @@ int main(int argc, char* argv[]) {
             next_root_node_row_number = N_halos_in_tree;
         }
 
-        data.data_at(id, root_node_row_number, id_key);
+        id = data.get_data<int64_t>(root_node_row_number, id_key);
         auto root_node = std::make_shared<Node>(root_node_row_number,
                                                 nullptr, id);
         forest.push_back(
@@ -85,10 +83,12 @@ int main(int argc, char* argv[]) {
     // look at the very last node returned
     auto node = nodes.back();
     while (node != nullptr) {
-        data.data_at(scale, node->get_data_row(), scale_key);
-        data.data_at(virial_mass, node->get_data_row(), virial_mass_key);
+        scale = data.get_data<double>(node->get_data_row(), scale_key);
+        virial_mass = data.get_data<double>(node->get_data_row(), virial_mass_key);
+
         std::cout << "Traversal mass Mvir = " << virial_mass << " Msun/h at ";
         std::cout << "z = " << 1.0 / scale - 1.0 << std::endl;
+        
         node = node->get_parent();
     }
 

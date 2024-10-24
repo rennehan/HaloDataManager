@@ -4,9 +4,9 @@
 #include <cassert>
 #include <memory>
 #include <unordered_set>
-#include "test/test.h"
-#include "tree/Tree.hpp"
-#include "io/DataIO.hpp"
+#include "../test.h"
+#include "../../tree/Tree.hpp"
+#include "../../io/DataIO.hpp"
 
 int main(int argc, char* argv[]) {
     DataIO<DataContainer<ConsistentTreesData>> consistent_io("../data/tree_0_0_0.dat");
@@ -18,20 +18,9 @@ int main(int argc, char* argv[]) {
     DataContainer<ConsistentTreesData> consistent_trees_data(consistent_mask);
     size_t N_halos_in_tree = consistent_io.read_data_from_file(consistent_trees_data);
 
-    int64_t id, descendant_id;
-    double scale, virial_mass;
-
     auto id_key = consistent_trees_data.get_internal_key("id");
     auto descendant_id_key = consistent_trees_data.get_internal_key("descendant_id");
-    auto scale_key = consistent_trees_data.get_internal_key("scale");
     auto virial_mass_key = consistent_trees_data.get_internal_key("virial_mass");
-
-    std::unordered_map<std::string, size_t> keys = {
-        {"id", id_key},
-        {"descendant_id", descendant_id_key},
-        {"scale", scale_key},
-        {"virial_mass", virial_mass_key}
-    };
 
     /**
      * The consistent trees data file contains many trees (thousands). Each tree
@@ -42,8 +31,7 @@ int main(int argc, char* argv[]) {
     */
     std::vector<size_t> root_node_indices;
     for (size_t i = 0; i < N_halos_in_tree; i++) {
-        consistent_trees_data.data_at(descendant_id, i, keys.at("descendant_id"));
-        if (descendant_id == -1) {
+        if (consistent_trees_data.get_data<int64_t>(i, descendant_id_key) == -1) {
             root_node_indices.push_back(i);
         }
     }
@@ -59,7 +47,7 @@ int main(int argc, char* argv[]) {
             next_root_node_index = N_halos_in_tree;
         }
 
-        consistent_trees_data.data_at(id, root_node_index, keys.at("id"));
+        size_t id = consistent_trees_data.get_data<int64_t>(root_node_index, id_key);
         auto root_node = std::make_shared<Node>(root_node_index, nullptr, id);
         forest.push_back(
             std::make_unique<Tree>(root_node, root_node_index, 
@@ -150,7 +138,7 @@ int main(int argc, char* argv[]) {
     // get the mass evolution of the most massive progenitor
     std::vector<double> mass_list;
     forest[0]->traverse_most_massive_branch(consistent_trees_data, node, 
-                                            keys.at("virial_mass"), mass_list);
+                                            virial_mass_key, mass_list);
 
     std::cout << "\n\nMasses (Msun / h)" << std::endl;
     for (auto &mass : mass_list) {

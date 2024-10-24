@@ -73,9 +73,11 @@ void Tree::recursive_build_tree(const DataContainer<DataFileFormat> &data,
             continue;
         }
 
-        data.data_at(child_id, indexer, data.get_internal_key("id"));
-        data.data_at(descendant_id, indexer, 
-                     data.get_internal_key("descendant_id"));
+        child_id = data.template
+                   get_data<int64_t>(indexer, data.get_internal_key("id"));
+        descendant_id = data.template
+                        get_data<int64_t>(indexer, 
+                        data.get_internal_key("descendant_id"));
 
         if (descendant_id == parent_node->halo.get_id()) {
             parent_node->add_child(
@@ -99,12 +101,10 @@ void Tree::recursive_build_tree(const DataContainer<DataFileFormat> &data,
 template <typename DataFileFormat>
 void Tree::build_tree(DataContainer<DataFileFormat> &data) {
 
-    int64_t id, descendant_id;
+    int64_t id;
 
-    data.data_at(id, root_node_row_in_data_, data.get_internal_key("id"));
-    data.data_at(descendant_id, root_node_row_in_data_, 
-                 data.get_internal_key("descendant_id"));
-
+    id = data.template
+         get_data<int64_t>(root_node_row_in_data_, data.get_internal_key("id"));
     root_node_ = std::make_shared<Node>(root_node_row_in_data_, nullptr, id);
 
     std::unordered_set<size_t> visited_node_indices;
@@ -134,8 +134,8 @@ void Tree::traverse_most_massive_branch(const DataContainer<DataFileFormat> &dat
         return;
     }
 
-    T value;
-    data.data_at(value, node->get_data_row(), key);
+    T value = data.template
+              get_data<T>(node->get_data_row(), key);
     value_list.push_back(value);
 
     if (!node->children_.empty()) {
@@ -150,13 +150,14 @@ void Tree::recursive_breadth_first_search(const DataContainer<DataFileFormat> &d
                                           const size_t key, const T query,
                                           Comparison compare,
                                           std::vector<std::shared_ptr<Node>> &nodes) const {
-    double value;
+    T value;
     while (!to_visit.empty()) {
         for (auto &child : to_visit.front()->children_) {
             to_visit.push(child);
         }
 
-        data.data_at(value, to_visit.front()->get_data_row(), key);
+        value = data.template 
+                get_data<T>(to_visit.front()->get_data_row(), key);
         if (compare(value, query)) {
             nodes.push_back(to_visit.front());
         }

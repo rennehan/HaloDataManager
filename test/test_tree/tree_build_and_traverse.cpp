@@ -4,7 +4,7 @@
 #include <cassert>
 #include <memory>
 #include <set>
-#include "tree/Node.hpp"
+#include "../../tree/Node.hpp"
 
 // depth first search
 void open_node(const std::shared_ptr<Node> &node_to_visit, std::shared_ptr<std::set<int64_t>> &set) {
@@ -31,14 +31,11 @@ void open_node(const std::shared_ptr<Node> &node_to_visit, std::shared_ptr<std::
 }
 
 int main(int argc, char* argv[]) {
-    auto parent_node = std::make_shared<Node>();
-    parent_node->set_parent(nullptr);
-    parent_node->halo.set_id(0);
-    parent_node->halo.set_parent_id(-1);
+    auto parent_node = std::make_shared<Node>(0, nullptr, 0);
 
-    auto child_nodeA = std::make_shared<Node>();
-    auto child_nodeB = std::make_shared<Node>();
-    auto grandchild_nodeA = std::make_shared<Node>();
+    auto child_nodeA = std::make_shared<Node>(1, nullptr, 1);
+    auto child_nodeB = std::make_shared<Node>(2, nullptr, 2);
+    auto grandchild_nodeA = std::make_shared<Node>(3, nullptr, 3);
 
     child_nodeA->halo.set_id(1);
     child_nodeA->halo.set_parent_id(0);
