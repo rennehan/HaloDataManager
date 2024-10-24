@@ -1,5 +1,0 @@
-
-#ifndef TREE_FUNCTIONS_HPP
-#define TREE_FUNCTIONS_HPP
-
-#endif
