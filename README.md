@@ -87,7 +87,7 @@ As a simple example, it is possible to read Consistent-Trees data as above and t
 		
         // we need the id to make the parent node
         // nullptr is the pointer to the parent (none in this case)
-        size_t id = data.get_data<int64_t>(first_root_row, id_key);
+        auto id = data.get_data<int64_t>(first_root_row, id_key);
         auto root_node = std::make_shared<Node>(first_root_row, nullptr, id);
 		
         // make the tree based on the root node
