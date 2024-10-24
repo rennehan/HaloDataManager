@@ -25,17 +25,22 @@ The simplest usage, to read two columns in a Rockstar halo catalog, might look s
     #include <iostream>
     #include "io/DataIO.hpp"
     int main(int argc, char* argv[]) {
-	    DataIO<DataContainer<RockstarData>> data_io("file.list");
-	    // define the column you want
-	    std::vector<std::string> mask = {"id", "virial_mass"};
-	    // define the data container
-	    DataContainer<RockstarData> data(mask);
-	    // fill the container
-	    data_io.read_data_from_file(data);
-	    // print the 1st halo's virial mass
-	    auto mass = data.get_data<double>(0, data.get_internal_key("virial_mass"));
-	    std::cout << "Mass is " << mass << " Msun/h" << std::endl;
-	    return 0;
+        DataIO<DataContainer<RockstarData>> data_io("file.list");
+
+        // define the columns that you want
+        std::vector<std::string> mask = {"id", "virial_mass"};
+
+        // define the data container
+        DataContainer<RockstarData> data(mask);
+
+        // fill the container
+        data_io.read_data_from_file(data);
+
+        // print the 1st halo's virial mass
+        auto mass = data.get_data<double>(0, data.get_internal_key("virial_mass"));
+        std::cout << "Mass is " << mass << " Msun/h" << std::endl;
+
+        return 0;
 	}
 	
 ### Building merger trees
@@ -50,43 +55,48 @@ As a simple example, it is possible to read Consistent-Trees data as above and t
     #include <memory>
     #include "io/DataIO.hpp"
     int main(int argc, char* argv[]) {
-	    DataIO<DataContainer<ConsistentTreesData>> data_io("file.list");
-	    // we need these to construct the tree
-	    std::vector<std::string> mask = {"id", "descendant_id"};
-	    // define the data container
-	    DataContainer<ConsistentTreesData> data(mask);
-	    // fill the container
-	    size_t N_lines = data_io.read_data_from_file(data);
-	    size_t id_key = data.get_internal_key("id");
-	    size_t descendant_id_key = data.get_internal_key("descendant_id");
-	    size_t first_root_row = 0;
-	    size_t second_root_row = 0;
-	    // find the first and second root nodes in the file
-	    for (size_t row = 0; row < N_lines; row++) {
-			if (data.get_data<int64_t>(row, descendant_id_key) == -1) {
-				first_root_row = row;
+        DataIO<DataContainer<ConsistentTreesData>> data_io("file.list");
+        // we need these to construct the tree
+        std::vector<std::string> mask = {"id", "descendant_id"};
 
-				for (size_t next_row = row; next_row < N_lines; next_row++) {
-					if (data.get_data<int64_t>(next_row, descendant_id_key) == -1) {
-						second_root_row = next_row;
-						break;
-					}
-				break;
-			}
-		}
+        // define the data container
+        DataContainer<ConsistentTreesData> data(mask);
+
+        // fill the container
+        size_t N_lines = data_io.read_data_from_file(data);
+        size_t id_key = data.get_internal_key("id");
+        size_t descendant_id_key = data.get_internal_key("descendant_id");
+        size_t first_root_row = 0;
+        size_t second_root_row = 0;
+
+        // find the first and second root nodes in the file
+        for (size_t row = 0; row < N_lines; row++) {
+            if (data.get_data<int64_t>(row, descendant_id_key) == -1) {
+                first_root_row = row;
+
+                for (size_t next_row = row; next_row < N_lines; next_row++) {
+                    if (data.get_data<int64_t>(next_row, descendant_id_key) == -1) {
+                        second_root_row = next_row;
+                        break;
+                    }
+                }
+                break;
+            }
+        }
 		
-		// we need the id to make the parent node
-		// nullptr is the pointer to the parent (none in this case)
-		size_t id = data.get_data<int64_t>(first_root_row, id_key);
-		auto root_node = std::make_shared<Node>(first_root_row, nullptr, id);
+        // we need the id to make the parent node
+        // nullptr is the pointer to the parent (none in this case)
+        size_t id = data.get_data<int64_t>(first_root_row, id_key);
+        auto root_node = std::make_shared<Node>(first_root_row, nullptr, id);
 		
-		// make the tree based on the root node
-		auto tree = std::make_shared<Tree>(root_node, first_root_row, second_root_row);
-		
-		// build the tree from the loaded data
-		tree->build_tree(data);
-	    return 0;
-	}
+        // make the tree based on the root node
+        auto tree = std::make_shared<Tree>(root_node, first_root_row, second_root_row);
+
+        // build the tree from the loaded data
+        tree->build_tree(data);
+
+        return 0;
+    }
 
 ### Tree traversal
 
