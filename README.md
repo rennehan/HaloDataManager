@@ -74,7 +74,8 @@ As a simple example, it is possible to read Consistent-Trees data as above and t
             if (data.get_data<int64_t>(row, descendant_id_key) == -1) {
                 first_root_row = row;
 
-                for (size_t next_row = row; next_row < N_lines; next_row++) {
+                // start at the next row to look for the next root node
+                for (size_t next_row = row + 1; next_row < N_lines; next_row++) {
                     if (data.get_data<int64_t>(next_row, descendant_id_key) == -1) {
                         second_root_row = next_row;
                         break;
