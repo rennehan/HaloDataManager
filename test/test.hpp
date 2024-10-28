@@ -16,10 +16,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#ifndef TEST_HPP
+#define TEST_HPP
+
 #include <iostream>
 #include <string>
 
+#ifndef EPSILON
 #define EPSILON 0.01
+#endif
+
 #define TREE_VERBOSE
 
 template <typename T>
@@ -50,3 +56,5 @@ inline void test_passed(const std::string &variable_checked,
         std::cout << " for index #" << index << "." << std::endl;
     }
 }
+
+#endif

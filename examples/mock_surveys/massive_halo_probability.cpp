@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
     const std::string path_prefix = "./random_surveys/";
     auto path_suffix = padded_snapshot + "_" 
                             + std::to_string((size_t)survey_depth) + "cMpc.dat";
-    if (argc == 5) {
+    if (argc == (int)arg_map.size() + 1) {
         path_suffix = padded_snapshot + "_" + survey_width_degrees_string 
                         + "deg_" + std::to_string((size_t)survey_depth) 
                         + "cMpc.dat";
@@ -195,6 +195,19 @@ int main(int argc, char *argv[]) {
         random_y[i] = dis(gen);
         random_z[i] = dis(gen);
 
+        auto x_lim = half_survey_width;
+        auto y_lim = half_survey_width;
+        auto z_lim = half_survey_width;
+        if (i < lower_limit) {
+            z_lim = half_survey_depth;
+        }
+        else if (i >= lower_limit && i < upper_limit) {
+            y_lim = half_survey_depth;
+        }
+        else {
+            x_lim = half_survey_depth;
+        }
+
         for (size_t j = 0; j < N_halos; j++) {
             if (data.get_data<double>(j, mass_key) < mass_cuts[0]) {
                 continue;
@@ -208,19 +221,6 @@ int main(int argc, char *argv[]) {
             check_position_out_of_bounds_and_adjust(x, half_box_size, box_size);
             check_position_out_of_bounds_and_adjust(y, half_box_size, box_size);
             check_position_out_of_bounds_and_adjust(z, half_box_size, box_size);
-
-            double x_lim = half_survey_width;
-            double y_lim = half_survey_width;
-            double z_lim = half_survey_width;
-            if (j < lower_limit) {
-                z_lim = half_survey_depth;
-            }
-            else if (j >= lower_limit && j < upper_limit) {
-                y_lim = half_survey_depth;
-            }
-            else {
-                x_lim = half_survey_depth;
-            }
 
             if ((x < x_lim) && (x > -x_lim)
                 && (y < y_lim) && (y > -y_lim)
