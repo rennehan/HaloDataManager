@@ -88,6 +88,8 @@ public:
 
     template <typename T>
     T get_data(const size_t row, const size_t column) const;
+    template <typename T>
+    T get_data(const size_t row, const std::string &column) const;
 };
 
 template class DataContainer<RockstarData>;
@@ -357,10 +359,18 @@ bool DataContainer<DataFileFormat>::is_column_double(const size_t column_index) 
     return data_is_double_mask_.at(column_index);
 }
 
+// TODO data should be in column -> row format for faster access
 template <typename DataFileFormat>
 template <typename T>
 T DataContainer<DataFileFormat>::get_data(const size_t row, const size_t column) const {
     return std::get<T>(data_.at(row)->at(column));
+}
+
+template <typename DataFileFormat>
+template <typename T>
+T DataContainer<DataFileFormat>::get_data(const size_t row,
+                                          const std::string &column) const {
+    return std::get<T>(data_.at(row)->at(get_internal_key(column)));
 }
 
 #endif

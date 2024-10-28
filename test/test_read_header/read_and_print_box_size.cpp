@@ -23,15 +23,21 @@
 
 int main(int argc, char* argv[]) {
     DataIO<DataContainer<RockstarData>> rockstar("../data/out_163.list");
+    DataIO<DataContainer<ConsistentTreesData>> consistent("../data/tree_0_0_0.dat");
 
     std::vector<std::string> header = rockstar.read_header();
 
     double box_size = rockstar.read_box_size_from_header();
-    std::cout << "Box size from header (not passed): " << box_size << std::endl;
+    std::cout << "Box size from header (not passed): ";
+    std::cout << box_size << std::endl;
 
     box_size = rockstar.read_box_size_from_header(header);
-    std::cout << "Box size from header (passed): " << box_size << std::endl;
+    std::cout << "Box size from header (passed): ";
+    std::cout << box_size << std::endl;
 
+    box_size = consistent.read_box_size_from_header(header);
+    std::cout << "Box size from header (passed): ";
+    std::cout << box_size << std::endl;
 
     return 0;
 }

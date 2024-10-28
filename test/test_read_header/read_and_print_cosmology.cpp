@@ -23,6 +23,7 @@
 
 int main(int argc, char* argv[]) {
     DataIO<DataContainer<RockstarData>> rockstar("../data/out_163.list");
+    DataIO<DataContainer<ConsistentTreesData>> consistent("../data/tree_0_0_0.dat");
 
     std::vector<std::string> header = rockstar.read_header();
 
@@ -34,6 +35,11 @@ int main(int argc, char* argv[]) {
 
     cosmology = rockstar.read_cosmology_from_header(header);
 
+    for (auto &cosmology_parameter : cosmology) {
+        std::cout << "Cosmology parameter value (passed): " << cosmology_parameter << std::endl;
+    }
+
+    cosmology = consistent.read_cosmology_from_header(consistent.read_header());
     for (auto &cosmology_parameter : cosmology) {
         std::cout << "Cosmology parameter value (passed): " << cosmology_parameter << std::endl;
     }

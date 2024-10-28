@@ -118,11 +118,13 @@ std::vector<std::string> DataIO<Container>::read_header(void) {
 }
 
 template <typename Container>
-std::vector<double> DataIO<Container>::read_cosmology_from_header(const std::vector<std::string> &header) const {
+std::vector<double> DataIO<Container>::read_cosmology_from_header(
+    const std::vector<std::string> &header) const {
+
     std::vector<double> cosmological_parameters;
 
     for (auto line : header) {
-        if (line.find("#Om") != std::string::npos) {
+        if ((line.find("#Om") != std::string::npos)) {
             size_t pos1 = line.find(";");
             size_t pos2 = line.find(";", pos1 + 1);
 
@@ -193,7 +195,8 @@ template <typename Container>
 double DataIO<Container>::read_box_size_from_header(const std::vector<std::string> &header) const {
     double box_size = -1.;
     for (auto line : header) {
-        if (line.find("#Box") != std::string::npos) {
+        if ((line.find("#Box") != std::string::npos) 
+            || (line.find("box") != std::string::npos)) {
             size_t pos1 = line.find(" ", line.find(" ") + 1);
             size_t pos2 = line.find(" ", pos1 + 1);
             box_size = std::stof(
