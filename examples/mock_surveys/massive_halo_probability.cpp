@@ -209,14 +209,20 @@ int main(int argc, char *argv[]) {
         }
 
         for (size_t j = 0; j < N_halos; j++) {
-            if (data.get_data<double>(j, mass_key) < mass_cuts[0]) {
+            auto halo_mass = data.get_data<double>(j, mass_key);
+            halo_mass /= hubble_constant;
+            if (halo_mass < mass_cuts[0]) {
                 continue;
             }
 
-            auto x = data.get_data<double>(j, x_key) - random_x[i];
-            auto y = data.get_data<double>(j, y_key) - random_y[i];
-            auto z = data.get_data<double>(j, z_key) - random_z[i];
+            auto x = data.get_data<double>(j, x_key) / hubble_constant;
+            auto y = data.get_data<double>(j, y_key) / hubble_constant;
+            auto z = data.get_data<double>(j, z_key) / hubble_constant;
         
+            x -= random_x[i];
+            y -= random_y[i];
+            z -= random_z[i];
+
             // check if any particles are now outside of the boundaries
             check_position_out_of_bounds_and_adjust(x, half_box_size, box_size);
             check_position_out_of_bounds_and_adjust(y, half_box_size, box_size);
@@ -226,7 +232,7 @@ int main(int argc, char *argv[]) {
                 && (y < y_lim) && (y > -y_lim)
                 && (z < z_lim) && (z > -z_lim)) {
                 for (size_t k = 0; k < N_mass_cuts; k++) {
-                    if (data.get_data<double>(j, mass_key) > mass_cuts[k]) {
+                    if (halo_mass >= mass_cuts[k]) {
                         samples[k][i] += 1.; // raw count
                     }
                 }

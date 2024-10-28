@@ -333,7 +333,8 @@ int main(int argc, char *argv[]) {
         // root node mass of the tree
         const auto row_idx = forest[forest_idx]->root_node_row_in_data_;
         const auto final_mass = tree_data.get_data<double>(row_idx, tree_mass_key);
-        final_halo_masses[j] = final_mass;
+        // units should be Msun
+        final_halo_masses[j] = final_mass / hubble_constant;
     }
 
     // each mass cut can have N <= N_halos halos that have final masses
@@ -371,13 +372,20 @@ int main(int argc, char *argv[]) {
             }
 
             for (size_t j = 0; j < N_halos; j++) {
-                if (data.get_data<double>(j, mass_key) < mass_cuts[k]) {
+                auto halo_mass = data.get_data<double>(j, mass_key);
+                halo_mass /= hubble_constant;
+                if (halo_mass < mass_cuts[k]) {
                     continue;
                 }
 
-                auto x = data.get_data<double>(j, x_key) - positions[0][i];
-                auto y = data.get_data<double>(j, y_key) - positions[1][i];
-                auto z = data.get_data<double>(j, z_key) - positions[2][i];
+                // units should be cMpc
+                auto x = data.get_data<double>(j, x_key) / hubble_constant;
+                auto y = data.get_data<double>(j, y_key) / hubble_constant;
+                auto z = data.get_data<double>(j, z_key) / hubble_constant;
+
+                x -= positions[0][i];
+                y -= positions[1][i];
+                z -= positions[2][i];
 
                 // check if any particles are now outside of the boundaries
                 check_position_out_of_bounds_and_adjust(x, half_box_size, 
