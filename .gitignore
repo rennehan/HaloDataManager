@@ -35,6 +35,7 @@
 *.out
 *.app
 test/bin
+examples/mock_surveys/bin
 
 # Data files
 *.dat
