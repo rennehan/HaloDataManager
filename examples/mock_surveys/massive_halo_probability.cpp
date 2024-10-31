@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     }
 
     size_t snapshot = atoi(argv[arg_map["snapshot"]]);
-    double survey_depth = atof(argv[arg_map["survey_depth"]]);
+    const double survey_depth = atof(argv[arg_map["survey_depth"]]);
     const auto half_survey_depth = survey_depth / 2.;
     // replace only if the angular size is specified
     auto survey_width = survey_depth; 
@@ -124,19 +124,20 @@ int main(int argc, char *argv[]) {
     const auto redshift = 1. / scale_factor - 1.;
     const auto half_box_size = box_size / 2.; // units are cMpc/h
 
+    // units are cMpc
     survey_width = Mpc_comoving_per_degree(redshift, omega_matter, hubble_constant);
     survey_width *= survey_width_degrees;
-    survey_width *= hubble_constant; // units are cMpc/h now
 
+    // units are cMpc
     const auto half_survey_width = survey_width / 2.;
 
     std::cout << "Survey width computed: " << survey_width << " cMpc\n\n";
 
-    if (survey_depth > box_size) {
+    if (survey_depth > (box_size / hubble_constant)) {
         std::runtime_error("Survey depth cannot be larger than the box size.");
     }
 
-    if (survey_width > box_size) {
+    if (survey_width > (box_size / hubble_constant)) {
         std::runtime_error("Survey width cannot be larger than the box size.");
     }
 
@@ -188,7 +189,8 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        number_densities[k] /= pow(box_size, 3.); // 1 / cMpc^3
+        // 1 / cMpc^3
+        number_densities[k] /= pow(box_size / hubble_constant, 3.);
     }
 
     std::cout << "Randomly sampling N = " << std::to_string(N_samples);
@@ -204,17 +206,18 @@ int main(int argc, char *argv[]) {
         random_y[i] = dis(gen);
         random_z[i] = dis(gen);
 
-        x_lim[i] = half_survey_width;
-        y_lim[i] = half_survey_width;
-        z_lim[i] = half_survey_width;
+        // these should all be Mpc/h, like the rockstar units
+        x_lim[i] = half_survey_width * hubble_constant;
+        y_lim[i] = half_survey_width * hubble_constant;
+        z_lim[i] = half_survey_width * hubble_constant;
         if (i < lower_limit) {
-            z_lim[i] = half_survey_depth;
+            z_lim[i] = half_survey_depth * hubble_constant;
         }
         else if (i >= lower_limit && i < upper_limit) {
-            y_lim[i] = half_survey_depth;
+            y_lim[i] = half_survey_depth * hubble_constant;
         }
         else {
-            x_lim[i] = half_survey_depth;
+            x_lim[i] = half_survey_depth * hubble_constant;
         }
     }
 

@@ -188,6 +188,7 @@ int main(int argc, char *argv[]) {
     const auto omega_lambda = cosmological_parameters[1];
     const auto hubble_constant = cosmological_parameters[2];
 
+    // units are cMpc/h
     const auto half_box_size = box_size / 2.;
 
     if (scale_factor > 1.) {
@@ -208,11 +209,11 @@ int main(int argc, char *argv[]) {
 
     std::cout << "Survey width computed: " << survey_width << " cMpc\n\n";
 
-    if (survey_depth > box_size) {
+    if (survey_depth > (box_size / hubble_constant)) {
         std::runtime_error("Survey depth cannot be larger than the box size.");
     }
 
-    if (survey_width > box_size) {
+    if (survey_width > (box_size / hubble_constant)) {
         std::runtime_error("Survey width cannot be larger than the box size.");
     }
 
@@ -359,17 +360,17 @@ int main(int argc, char *argv[]) {
 
     // generate all of the x_lim, y_lim, and z_lim
     for (size_t i = 0; i < N_samples; i++) {
-        x_lim[i] = half_survey_width;
-        y_lim[i] = half_survey_width;
-        z_lim[i] = half_survey_width;
+        x_lim[i] = half_survey_width * hubble_constant;
+        y_lim[i] = half_survey_width * hubble_constant;
+        z_lim[i] = half_survey_width * hubble_constant;
         if (i < lower_limit) {
-            z_lim[i] = half_survey_depth;
+            z_lim[i] = half_survey_depth * hubble_constant;
         }
         else if (i >= lower_limit && i < upper_limit) {
-            y_lim[i] = half_survey_depth;
+            y_lim[i] = half_survey_depth * hubble_constant;
         }
         else {
-            x_lim[i] = half_survey_depth;
+            x_lim[i] = half_survey_depth * hubble_constant;
         }
     }
 
@@ -392,18 +393,15 @@ int main(int argc, char *argv[]) {
                 auto z = data.get_data<double>(j, z_key) - positions[2][i];
 
                 // check if any particles are now outside of the boundaries
-                check_position_out_of_bounds_and_adjust(x, half_box_size, 
-                                                        box_size);
-                check_position_out_of_bounds_and_adjust(y, half_box_size, 
-                                                        box_size);
-                check_position_out_of_bounds_and_adjust(z, half_box_size, 
-                                                        box_size);
+                check_position_out_of_bounds_and_adjust(x, half_box_size, box_size);
+                check_position_out_of_bounds_and_adjust(y, half_box_size, box_size);
+                check_position_out_of_bounds_and_adjust(z, half_box_size, box_size);
 
                 if ((x < x_lim[i]) && (x > -x_lim[i])
                     && (y < y_lim[i]) && (y > -y_lim[i])
                     && (z < z_lim[i]) && (z > -z_lim[i])) {
                     halo_mass_distribution[k][i].push_back(
-                        final_halo_masses[j]
+                        final_halo_masses[j] // Msun
                     );
                 }
             }
