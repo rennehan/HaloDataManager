@@ -21,8 +21,8 @@
 
 mkdir -p ./bin/
 
-g++ -c -std=c++17 -Wall -Wextra -lgsl -lgslcblas -lm -lhdf5_cpp -lhdf5 ${1}.cpp
-g++ -o ./bin/${1} -std=c++17 -Wall -Wextra -lgsl -lgslcblas -lm -lhdf5_cpp -lhdf5 ${1}.o
+g++ -c ${2} -std=c++17 -Wall -Wextra -lgsl -lgslcblas -lm -lhdf5_cpp -lhdf5 ${1}.cpp
+g++ -o ./bin/${1} ${2} -std=c++17 -Wall -Wextra -lgsl -lgslcblas -lm -lhdf5_cpp -lhdf5 ${1}.o
 
 rm ./${1}.o
 

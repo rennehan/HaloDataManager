@@ -23,6 +23,7 @@
 #include <memory>
 #include <set>
 #include "../../tree/Node.hpp"
+#include "../test.hpp"
 
 // depth first search
 void open_node(const std::shared_ptr<Node> &node_to_visit, std::shared_ptr<std::set<int64_t>> &set) {
@@ -33,7 +34,6 @@ void open_node(const std::shared_ptr<Node> &node_to_visit, std::shared_ptr<std::
 
     // check if the node ID is in the stack
     if (set->find(node_to_visit->halo.get_id()) == set->end()) {
-        std::cout << node_to_visit->halo.get_id() << ", ";
         set->insert(node_to_visit->halo.get_id());
     }
 
@@ -48,7 +48,7 @@ void open_node(const std::shared_ptr<Node> &node_to_visit, std::shared_ptr<std::
     open_node(node_to_visit->get_parent(), set);
 }
 
-int main(int argc, char* argv[]) {
+int main() {
     auto parent_node = std::make_shared<Node>(0, nullptr, 0);
 
     auto child_nodeA = std::make_shared<Node>(1, nullptr, 1);
@@ -56,34 +56,51 @@ int main(int argc, char* argv[]) {
     auto grandchild_nodeA = std::make_shared<Node>(3, nullptr, 3);
 
     child_nodeA->halo.set_id(1);
+    assert(child_nodeA->halo.get_id() == 1);
+    test_passed("child_nodeA->halo.get_id()");
     child_nodeA->halo.set_parent_id(0);
-    std::cout << "Initial child_nodeA\n";
-    child_nodeA->info();
+    assert(child_nodeA->halo.get_parent_id() == 0);
+    test_passed("child_nodeA->halo.get_parent_id()");
 
     child_nodeB->halo.set_id(2);
+    assert(child_nodeB->halo.get_id() == 2);
+    test_passed("child_nodeA->halo.get_id()");
     child_nodeB->halo.set_parent_id(0);
-    std::cout << "Initial child_nodeB\n";
-    child_nodeB->info();
+    assert(child_nodeB->halo.get_parent_id() == 0);
+    test_passed("child_nodeA->halo.get_parent_id()");
 
     grandchild_nodeA->halo.set_id(3);
+    assert(grandchild_nodeA->halo.get_id() == 3);
+    test_passed("child_nodeA->halo.get_id()");
     grandchild_nodeA->halo.set_parent_id(1);
-    std::cout << "Initial grandchild_nodeA\n";
-    grandchild_nodeA->info();
+    assert(grandchild_nodeA->halo.get_parent_id() == 1);
+    test_passed("child_nodeA->halo.get_parent_id()");
 
     parent_node->add_child(child_nodeA);
+    assert(parent_node->children_.size() == 1);
+    test_passed("parent_node->children_.size()");
+    assert(parent_node->children_[0]->halo.get_id() == 1);
+    test_passed("parent_node->children_[0]->halo.get_id()");
+
     parent_node->add_child(child_nodeB);
+    assert(parent_node->children_.size() == 2);
+    test_passed("parent_node->children_.size()");
+    assert(parent_node->children_[1]->halo.get_id() == 2);
+    test_passed("parent_node->children_[1]->halo.get_id()");
+
     child_nodeA->add_child(grandchild_nodeA);
+    assert(child_nodeA->children_.size() == 1);
+    test_passed("child_nodeA->children_.size()");
+    assert(child_nodeA->children_[0]->halo.get_id() == 3);
+    test_passed("child_nodeA->children_[0]->halo.get_id()");
 
-    child_nodeA->info();
-    child_nodeB->info();
-    grandchild_nodeA->info();
-
-    std::cout << "Traverse one branch.\n";
+    // check the back links through the parents
+    assert(child_nodeA->children_[0]->get_parent()->get_parent()->halo.get_id() == 0);
+    test_passed("child_nodeA->children_[0]->get_parent()->get_parent()->halo.get_id()");
 
     auto node = parent_node;
     // traverse until we reach the end of the branch
     while (node != nullptr) {
-        node->info();
         if (node->children_.size() > 0) {
             node = node->children_[0];
         }
@@ -100,9 +117,12 @@ int main(int argc, char* argv[]) {
     // depth first search
     open_node(node, set);
 
-    std::cout << "Visited IDs:\n";
+    const std::vector<int64_t> accepted_ids = {0, 1, 2, 3};
+    size_t index = 0;
     for (auto &set_value : *set) {
-        std::cout << set_value << std::endl;
+        assert(set_value == accepted_ids[index]);
+        test_passed("set_value", index);
+        index++;
     }
 
     return 0;

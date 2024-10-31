@@ -19,19 +19,23 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cassert>
 #include "../../io/DataIO.hpp"
+#include "../test.hpp"
 
-int main(int argc, char* argv[]) {
+int main() {
     DataIO<DataContainer<RockstarData>> rockstar("../data/out_163.list");
 
     std::vector<std::string> header = rockstar.read_header();
 
+    const double accepted_scale_factor = 1.;
     double scale_factor = rockstar.read_scale_factor_from_header();
-    std::cout << "Scale factor from header (not passed): " << scale_factor << std::endl;
+    assert(scale_factor == accepted_scale_factor);
+    test_passed("read_scale_factor_from_header()");
 
     scale_factor = rockstar.read_scale_factor_from_header(header);
-    std::cout << "Scale factor from header (passed): " << scale_factor << std::endl;
-
+    assert(scale_factor == accepted_scale_factor);
+    test_passed("read_scale_factor_from_header(header)");
 
     return 0;
 }

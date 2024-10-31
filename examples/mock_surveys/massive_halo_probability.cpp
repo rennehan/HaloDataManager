@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
     const auto random_positions_data_file = path_prefix + "centers_" 
                                               + path_suffix;
 
-    const auto mass_cuts = build_mass_cuts_list();
+    auto mass_cuts = build_mass_cuts_list();
 
     const auto data_file = "../../test/data/out_" 
                             + std::to_string(snapshot) + ".list";
@@ -122,11 +122,11 @@ int main(int argc, char *argv[]) {
     }
 
     const auto redshift = 1. / scale_factor - 1.;
-    box_size /= hubble_constant; // units are now cMpc
-    const auto half_box_size = box_size / 2.;
+    const auto half_box_size = box_size / 2.; // units are cMpc/h
 
     survey_width = Mpc_comoving_per_degree(redshift, omega_matter, hubble_constant);
     survey_width *= survey_width_degrees;
+    survey_width *= hubble_constant; // units are cMpc/h now
 
     const auto half_survey_width = survey_width / 2.;
 
@@ -140,13 +140,18 @@ int main(int argc, char *argv[]) {
         std::runtime_error("Survey width cannot be larger than the box size.");
     }
 
+    // make sure the mass cuts are Msun/h like rockstar
+    for (size_t i = 0; i < mass_cuts.size(); i++) {
+        mass_cuts[i] *= hubble_constant;
+    }
+    
     std::cout << "Parameters\n";
     std::cout << "--------------\n";
     std::cout << "omega_matter = " << omega_matter << "\n";
     std::cout << "omega_lambda = " << omega_lambda << "\n";
     std::cout << "hubble_constant = " << hubble_constant << "\n";
     std::cout << "z = " << redshift << "\n";
-    std::cout << "box_size = " << box_size << " cMpc\n\n";
+    std::cout << "box_size = " << box_size << " cMpc/h\n\n";
 
     std::cout << "Reading the halo catalog file:\n";
     std::cout << data_file << "\n\n";
@@ -189,59 +194,53 @@ int main(int argc, char *argv[]) {
     std::cout << "Randomly sampling N = " << std::to_string(N_samples);
     std::cout << " samples." << std::endl;
 
-    const auto start_time = std::chrono::high_resolution_clock::now();
+    std::vector<double> x_lim(N_samples);
+    std::vector<double> y_lim(N_samples);
+    std::vector<double> z_lim(N_samples);
+
+    // generate all of the random numbers, x_lim, y_lim, and z_lim
     for (size_t i = 0; i < N_samples; i++) {
         random_x[i] = dis(gen);
         random_y[i] = dis(gen);
         random_z[i] = dis(gen);
 
-        auto x_lim = half_survey_width;
-        auto y_lim = half_survey_width;
-        auto z_lim = half_survey_width;
+        x_lim[i] = half_survey_width;
+        y_lim[i] = half_survey_width;
+        z_lim[i] = half_survey_width;
         if (i < lower_limit) {
-            z_lim = half_survey_depth;
+            z_lim[i] = half_survey_depth;
         }
         else if (i >= lower_limit && i < upper_limit) {
-            y_lim = half_survey_depth;
+            y_lim[i] = half_survey_depth;
         }
         else {
-            x_lim = half_survey_depth;
+            x_lim[i] = half_survey_depth;
         }
+    }
 
-        for (size_t j = 0; j < N_halos; j++) {
-            auto halo_mass = data.get_data<double>(j, mass_key);
-            halo_mass /= hubble_constant;
-            if (halo_mass < mass_cuts[0]) {
-                continue;
-            }
+    const auto start_time = std::chrono::high_resolution_clock::now();
+    for (size_t k = 0; k < N_mass_cuts; k++) {
+        for (size_t i = 0; i < N_samples; i++) {
+            for (size_t j = 0; j < N_halos; j++) {
+                if (data.get_data<double>(j, mass_key) < mass_cuts[k]) {
+                    continue;
+                }
 
-            auto x = data.get_data<double>(j, x_key) / hubble_constant;
-            auto y = data.get_data<double>(j, y_key) / hubble_constant;
-            auto z = data.get_data<double>(j, z_key) / hubble_constant;
+                auto x = data.get_data<double>(j, x_key) - random_x[i];
+                auto y = data.get_data<double>(j, y_key) - random_y[i];
+                auto z = data.get_data<double>(j, z_key) - random_z[i];
         
-            x -= random_x[i];
-            y -= random_y[i];
-            z -= random_z[i];
+                // check if any particles are now outside of the boundaries
+                check_position_out_of_bounds_and_adjust(x, half_box_size, box_size);
+                check_position_out_of_bounds_and_adjust(y, half_box_size, box_size);
+                check_position_out_of_bounds_and_adjust(z, half_box_size, box_size);
 
-            // check if any particles are now outside of the boundaries
-            check_position_out_of_bounds_and_adjust(x, half_box_size, box_size);
-            check_position_out_of_bounds_and_adjust(y, half_box_size, box_size);
-            check_position_out_of_bounds_and_adjust(z, half_box_size, box_size);
-
-            if ((x < x_lim) && (x > -x_lim)
-                && (y < y_lim) && (y > -y_lim)
-                && (z < z_lim) && (z > -z_lim)) {
-                for (size_t k = 0; k < N_mass_cuts; k++) {
-                    if (halo_mass >= mass_cuts[k]) {
-                        samples[k][i] += 1.; // raw count
-                    }
+                if ((x < x_lim[i]) && (x > -x_lim[i])
+                    && (y < y_lim[i]) && (y > -y_lim[i])
+                    && (z < z_lim[i]) && (z > -z_lim[i])) {
+                    samples[k][i] += 1.; // raw count
                 }
             }
-        }
-
-        for (size_t k = 0; k < N_mass_cuts; k++) {
-            samples[k][i] /= survey_width * survey_width;
-            samples[k][i] /= survey_depth; // 1/cMpc^3
         }
     }
     const auto end_time = std::chrono::high_resolution_clock::now();
@@ -252,6 +251,15 @@ int main(int argc, char *argv[]) {
         (double)N_samples * (double)N_halos * (double)N_mass_cuts) 
             / seconds_interval.count();
     std::cout << "The speed was " << iterations_per_second << " it/s\n\n";
+
+    // get the number densities in each case
+    for (size_t k = 0; k < N_mass_cuts; k++) {
+        for (size_t i = 0; i < N_samples; i++) {
+            // normalize to 1 / cMpc^3
+            samples[k][i] /= survey_width * survey_width * survey_depth;
+            samples[k][i] *= hubble_constant * hubble_constant * hubble_constant;
+        }
+    }
 
     std::cout << "Saving files.\n\n";
     std::ofstream samples_file(samples_data_file);

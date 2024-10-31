@@ -19,29 +19,33 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cassert>
 #include "../../io/DataIO.hpp"
+#include "../test.hpp"
 
-int main(int argc, char* argv[]) {
+int main() {
     DataIO<DataContainer<RockstarData>> rockstar("../data/out_163.list");
     DataIO<DataContainer<ConsistentTreesData>> consistent("../data/tree_0_0_0.dat");
 
     std::vector<std::string> header = rockstar.read_header();
 
+    const std::vector<double> accepted_cosmology = {0.308, 0.692, 0.6781};
     std::vector<double> cosmology = rockstar.read_cosmology_from_header();
-
-    for (auto &cosmology_parameter : cosmology) {
-        std::cout << "Cosmology parameter value (not passed): " << cosmology_parameter << std::endl;
+    for (size_t i = 0; i < 3; i++) {
+        assert(close_enough(cosmology[i], accepted_cosmology[i]));
+        test_passed("read_cosmology_from_header()", i);
     }
 
     cosmology = rockstar.read_cosmology_from_header(header);
-
-    for (auto &cosmology_parameter : cosmology) {
-        std::cout << "Cosmology parameter value (passed): " << cosmology_parameter << std::endl;
+    for (size_t i = 0; i < 3; i++) {
+        assert(close_enough(cosmology[i], accepted_cosmology[i]));
+        test_passed("read_cosmology_from_header(header)", i);
     }
 
     cosmology = consistent.read_cosmology_from_header(consistent.read_header());
-    for (auto &cosmology_parameter : cosmology) {
-        std::cout << "Cosmology parameter value (passed): " << cosmology_parameter << std::endl;
+    for (size_t i = 0; i < 3; i++) {
+        assert(close_enough(cosmology[i], accepted_cosmology[i]));
+        test_passed("read_cosmology_from_header(consistent.read_header())", i);
     }
 
     return 0;

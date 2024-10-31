@@ -23,10 +23,11 @@
 #include <memory>
 #include <unordered_set>
 #include "../test.hpp"
+#undef TREE_VERBOSE
 #include "../../tree/Tree.hpp"
 #include "../../io/DataIO.hpp"
 
-int main(int argc, char* argv[]) {
+int main() {
     DataIO<DataContainer<ConsistentTreesData>> consistent_io("../data/tree_0_0_0.dat");
 
     std::vector<std::string> consistent_mask = {
@@ -73,40 +74,16 @@ int main(int argc, char* argv[]) {
         );
     }
 
-    std::cout << "Building first tree." << std::endl;
     forest[0]->build_tree(consistent_trees_data);
 
-    std::cout << "Traversing the first root node.\n";
     auto node = forest[0]->root_node_;
-
     int64_t root_node_id = node->halo.get_id();
-    std::cout << "\n\nRoot node has ID = " << root_node_id << std::endl;
-
     assert(close_enough((int64_t)16181, root_node_id));
     test_passed("node->halo.get_id()");
 
     std::vector<int64_t> accepted_children_ids = {
         11097, 11098, 11099, 11100
     };
-
-    indexer = 0;
-    for (auto &child : node->children_) {
-        int64_t child_id = child->halo.get_id();
-        int64_t child_parent_id = child->halo.get_parent_id();
-
-        std::cout << "Child #" << (int)indexer << " has ID = " << child_id;
-        std::cout << ", PID = " << child_parent_id << std::endl;
-
-        size_t grandchild_indexer = 0;
-        for (auto &grandchild : child->children_) {
-            int64_t grandchild_id = grandchild->halo.get_id();
-            int64_t grandchild_parent_id = grandchild->halo.get_parent_id();
-
-            std::cout << "\tGrandchild #" << (int)grandchild_indexer;
-            std::cout << " has ID = " << grandchild_id;
-            std::cout << ", PID = " << grandchild_parent_id << std::endl;
-        }
-    }
 
     indexer = 0;
     for (auto &child : node->children_) {
@@ -157,11 +134,6 @@ int main(int argc, char* argv[]) {
     std::vector<double> mass_list;
     forest[0]->traverse_most_massive_branch(consistent_trees_data, node, 
                                             virial_mass_key, mass_list);
-
-    std::cout << "\n\nMasses (Msun / h)" << std::endl;
-    for (auto &mass : mass_list) {
-        std::cout << mass << std::endl;
-    }
 
     std::vector<double> accepted_mass_list = {
         5.939e13, 5.792e13, 5.718e13, 5.517e13

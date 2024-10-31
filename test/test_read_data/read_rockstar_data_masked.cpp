@@ -21,8 +21,9 @@
 #include <string>
 #include <cassert>
 #include "../../io/DataIO.hpp"
+#include "../test.hpp"
 
-int main(int argc, char* argv[]) {
+int main() {
     DataIO<DataContainer<RockstarData>> data_io("../data/out_163.list");
 
     std::vector<std::string> column_mask;
@@ -32,20 +33,23 @@ int main(int argc, char* argv[]) {
     DataContainer<RockstarData> rockstar_data(column_mask);
     data_io.read_data_from_file(rockstar_data);
 
+    const std::vector<double> accepted_mvirs = {
+        1.2482e+11, 8.5974e+10, 7.1327e+10, 1.3374e+10, 8.279e+09, 4.0121e+10,
+        8.9159e+09, 4.9037e+10, 2.8658e+10, 3.6937e+10
+    };
     size_t mvir_key = rockstar_data.get_internal_key("virial_mass");
     // print the first 10 mvir values
     for (size_t i = 0; i < 10; i++) {
-        std::cout << "mvir #" << i << " = ";
-        std::cout << rockstar_data.get_data<double>(i, mvir_key);
-        std::cout << " Msun" << std::endl;
+        assert(close_enough(rockstar_data.get_data<double>(i, mvir_key),
+                accepted_mvirs[i]));
+        test_passed("rockstar_data.get_data<double>(i, mvir_key)", i);
     }
 
     size_t id_key = rockstar_data.get_internal_key("id");
     // print the first 10 id values
     for (size_t i = 0; i < 10; i++) {
-        std::cout << "id #" << i << " = ";
-        std::cout << rockstar_data.get_data<int64_t>(i, id_key);
-        std::cout << std::endl;
+        assert(rockstar_data.get_data<int64_t>(i, id_key) == (int64_t)i);
+        test_passed("rockstar_data.get_data<int64_t>(i, id_key)", i);
     }
 
     return 0;

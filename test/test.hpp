@@ -48,8 +48,8 @@ inline bool close_enough(T value_A, T value_B) {
 
 inline void test_passed(const std::string &variable_checked,
                         const int64_t index = -1) {
-    std::cout << "\nTest passed for value in " << variable_checked;
-    if (index < -1) {
+    std::cout << "Test passed for value in " << variable_checked;
+    if (index <= -1) {
         std::cout << "." << std::endl;
     }
     else {

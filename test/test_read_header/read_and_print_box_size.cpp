@@ -19,25 +19,28 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <cassert>
 #include "../../io/DataIO.hpp"
+#include "../test.hpp"
 
-int main(int argc, char* argv[]) {
+int main() {
     DataIO<DataContainer<RockstarData>> rockstar("../data/out_163.list");
     DataIO<DataContainer<ConsistentTreesData>> consistent("../data/tree_0_0_0.dat");
 
     std::vector<std::string> header = rockstar.read_header();
 
+    const double accepted_box_size = 25.;
     double box_size = rockstar.read_box_size_from_header();
-    std::cout << "Box size from header (not passed): ";
-    std::cout << box_size << std::endl;
+    assert(box_size == accepted_box_size);
+    test_passed("rockstar.read_box_size_from_header()");
 
     box_size = rockstar.read_box_size_from_header(header);
-    std::cout << "Box size from header (passed): ";
-    std::cout << box_size << std::endl;
+    assert(box_size == accepted_box_size);
+    test_passed("rockstar.read_box_size_from_header(header)");
 
     box_size = consistent.read_box_size_from_header(header);
-    std::cout << "Box size from header (passed): ";
-    std::cout << box_size << std::endl;
+    assert(box_size == accepted_box_size);
+    test_passed("consistent.read_box_size_from_header(header)");
 
     return 0;
 }

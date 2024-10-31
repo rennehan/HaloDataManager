@@ -73,7 +73,7 @@ private:
     // is true for double number and false for int64_t
     std::vector<bool> data_is_double_mask_;
 public:
-    std::vector<std::shared_ptr<std::vector<std::variant<double, float, int64_t>>>> data_;
+    std::vector<std::shared_ptr<std::vector<std::variant<double, int64_t>>>> data_;
 
     DataContainer(const std::vector<std::string> &provided_column_mask = std::vector<std::string>());
 
@@ -292,12 +292,20 @@ DataContainer<DataFileFormat>::DataContainer(const std::vector<std::string> &pro
         // (the data file column indices)
         for (const auto &val : provided_column_mask) {
             column_indices.push_back(keys_str_to_int_.at(val));
+            // create the pointers to the column vectors
+            auto data_column 
+                = std::make_shared<std::vector<std::variant<double, int64_t>>>();
+            data_.push_back(data_column);
         }
 
     }
     else {
         for (const auto &[key, val] : keys_str_to_int_) {
             column_indices.push_back(val);
+            // create the pointers to the column vectors
+            auto data_column 
+                = std::make_shared<std::vector<std::variant<double, int64_t>>>();
+            data_.push_back(data_column);
         } 
     }
 
@@ -359,18 +367,17 @@ bool DataContainer<DataFileFormat>::is_column_double(const size_t column_index) 
     return data_is_double_mask_.at(column_index);
 }
 
-// TODO data should be in column -> row format for faster access
 template <typename DataFileFormat>
 template <typename T>
 T DataContainer<DataFileFormat>::get_data(const size_t row, const size_t column) const {
-    return std::get<T>(data_.at(row)->at(column));
+    return std::get<T>((*data_[column])[row]);
 }
 
 template <typename DataFileFormat>
 template <typename T>
 T DataContainer<DataFileFormat>::get_data(const size_t row,
                                           const std::string &column) const {
-    return std::get<T>(data_.at(row)->at(get_internal_key(column)));
+    return std::get<T>((*data_[get_internal_key(column)])[row]);
 }
 
 #endif

@@ -34,6 +34,10 @@ for dir in ./test_*/ ; do
             if [[ $? -eq 0 ]]; then
                 echo "Succeeded compiling $cpp_file"
                 ../bin/$exe_file
+                if [ $? -ne 0 ]; then
+                    echo "The test failed!"
+                    break 2
+                fi
             else
                 echo "Compilation failed for $cpp_file"
             fi

@@ -236,8 +236,6 @@ bool DataIO<Container>::process_line_from_file(const std::string &line, Containe
         }
     }
 
-    auto row = std::make_shared<std::vector<std::variant<double, float, int64_t>>>();
-
     size_t column_index = 0;
     // field contains a string representation of the actual single data point in the file
     while (getline(line_stream, field, ' ')) {
@@ -247,18 +245,20 @@ bool DataIO<Container>::process_line_from_file(const std::string &line, Containe
 
         if (container.column_mask(column_index)) {
             if (container.is_column_double(column_index)) {
-                row->push_back(std::stod(field));
+                container.data_[container.get_internal_key(column_index)]->push_back(
+                    std::stod(field)
+                );
             }
             else {
                 // all non-double columns are int64_t types
-                row->push_back((int64_t)std::strtol(field.c_str(), NULL, 10));
+                container.data_[container.get_internal_key(column_index)]->push_back(
+                    (int64_t)std::strtol(field.c_str(), NULL, 10)
+                );
             }
         }
 
         column_index++;
     }
-
-    container.data_.push_back(row);
 
     return true;
 }

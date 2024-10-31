@@ -102,8 +102,8 @@ int main(int argc, char *argv[]) {
     const auto mass_dists_data_file = path_prefix + "mass_dists_"
                                         + path_suffix + ".h5";
 
-    const auto mass_cuts = build_mass_cuts_list();
-    const auto N_mass_cuts = mass_cuts.size();
+    auto mass_cuts = build_mass_cuts_list();
+    auto N_mass_cuts = mass_cuts.size();
 
     // load the N_samples random positions that were generated before
     // so that we can use them to resample and find the most massive
@@ -188,7 +188,6 @@ int main(int argc, char *argv[]) {
     const auto omega_lambda = cosmological_parameters[1];
     const auto hubble_constant = cosmological_parameters[2];
 
-    box_size /= hubble_constant; // units are now cMpc
     const auto half_box_size = box_size / 2.;
 
     if (scale_factor > 1.) {
@@ -217,6 +216,12 @@ int main(int argc, char *argv[]) {
         std::runtime_error("Survey width cannot be larger than the box size.");
     }
 
+    // make sure the mass cuts are Msun/h like rockstar
+    for (size_t i = 0; i < mass_cuts.size(); i++) {
+        mass_cuts[i] *= hubble_constant;
+    }
+
+
     std::cout << "Parameters\n";
     std::cout << "--------------\n";
     std::cout << "omega_matter = " << omega_matter << "\n";
@@ -224,7 +229,7 @@ int main(int argc, char *argv[]) {
     std::cout << "hubble_constant = " << hubble_constant << "\n";
     std::cout << "z = " << redshift << "\n";
     std::cout << "a = " << scale_factor << "\n";
-    std::cout << "box_size = " << box_size << " cMpc\n\n";
+    std::cout << "box_size = " << box_size << " cMpc/h\n\n";
 
     std::cout << "Reading the halo catalog file:\n";
     std::cout << data_file << "\n\n";
@@ -348,6 +353,26 @@ int main(int argc, char *argv[]) {
     std::cout << "Iterating over N = " << std::to_string(N_samples);
     std::cout << " samples." << std::endl;
     
+    std::vector<double> x_lim(N_samples);
+    std::vector<double> y_lim(N_samples);
+    std::vector<double> z_lim(N_samples);
+
+    // generate all of the x_lim, y_lim, and z_lim
+    for (size_t i = 0; i < N_samples; i++) {
+        x_lim[i] = half_survey_width;
+        y_lim[i] = half_survey_width;
+        z_lim[i] = half_survey_width;
+        if (i < lower_limit) {
+            z_lim[i] = half_survey_depth;
+        }
+        else if (i >= lower_limit && i < upper_limit) {
+            y_lim[i] = half_survey_depth;
+        }
+        else {
+            x_lim[i] = half_survey_depth;
+        }
+    }
+
     const auto start_time = std::chrono::high_resolution_clock::now();
     for (size_t k = 0; k < N_mass_cuts; k++) {
         for (size_t i = 0; i < N_samples; i++) {
@@ -356,36 +381,15 @@ int main(int argc, char *argv[]) {
                 continue;
             }
 
-            // given that the random positions file was saved in order,
-            // the same procedure can be used to determine the survey size
-            auto x_lim = half_survey_width;
-            auto y_lim = half_survey_width;
-            auto z_lim = half_survey_width;
-            if (i < lower_limit) {
-                z_lim = half_survey_depth;
-            }
-            else if (i >= lower_limit && i < upper_limit) {
-                y_lim = half_survey_depth;
-            }
-            else {
-                x_lim = half_survey_depth;
-            }
-
             for (size_t j = 0; j < N_halos; j++) {
-                auto halo_mass = data.get_data<double>(j, mass_key);
-                halo_mass /= hubble_constant;
-                if (halo_mass < mass_cuts[k]) {
+                if (data.get_data<double>(j, mass_key) < mass_cuts[k]) {
                     continue;
                 }
 
-                // units should be cMpc
-                auto x = data.get_data<double>(j, x_key) / hubble_constant;
-                auto y = data.get_data<double>(j, y_key) / hubble_constant;
-                auto z = data.get_data<double>(j, z_key) / hubble_constant;
-
-                x -= positions[0][i];
-                y -= positions[1][i];
-                z -= positions[2][i];
+                // units should be cMpc/h
+                auto x = data.get_data<double>(j, x_key) - positions[0][i];
+                auto y = data.get_data<double>(j, y_key) - positions[1][i];
+                auto z = data.get_data<double>(j, z_key) - positions[2][i];
 
                 // check if any particles are now outside of the boundaries
                 check_position_out_of_bounds_and_adjust(x, half_box_size, 
@@ -395,9 +399,9 @@ int main(int argc, char *argv[]) {
                 check_position_out_of_bounds_and_adjust(z, half_box_size, 
                                                         box_size);
 
-                if ((x < x_lim) && (x > -x_lim)
-                    && (y < y_lim) && (y > -y_lim)
-                    && (z < z_lim) && (z > -z_lim)) {
+                if ((x < x_lim[i]) && (x > -x_lim[i])
+                    && (y < y_lim[i]) && (y > -y_lim[i])
+                    && (z < z_lim[i]) && (z > -z_lim[i])) {
                     halo_mass_distribution[k][i].push_back(
                         final_halo_masses[j]
                     );
@@ -405,16 +409,13 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-
     const auto end_time = std::chrono::high_resolution_clock::now();
+
     std::chrono::duration<double> seconds_interval = end_time - start_time;
-
     std::cout << "\nDuration was " << seconds_interval.count() << " s\n";
-
     double iterations_per_second = (
         (double)N_samples * (double)N_halos * (double)N_mass_cuts) 
             / seconds_interval.count();
-
     std::cout << "The speed was " << iterations_per_second << " it/s\n";
     std::cout << "Saving files." << std::endl;
 
