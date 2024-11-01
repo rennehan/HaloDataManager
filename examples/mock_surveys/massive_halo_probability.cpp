@@ -260,7 +260,6 @@ int main(int argc, char *argv[]) {
         for (size_t i = 0; i < N_samples; i++) {
             // normalize to 1 / cMpc^3
             samples[k][i] /= survey_width * survey_width * survey_depth;
-            samples[k][i] *= hubble_constant * hubble_constant * hubble_constant;
         }
     }
 

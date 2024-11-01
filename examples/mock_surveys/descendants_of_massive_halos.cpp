@@ -334,13 +334,16 @@ int main(int argc, char *argv[]) {
     // for all of the mass cuts
     for (size_t j = 0; j < N_halos; j++) {
         const auto halo_id = data.get_data<int64_t>(j, id_key);
-        const auto forest_idx = id_forest_idx_map[halo_id];
-        // if we know the tree, we know the final halo mass is just the
-        // root node mass of the tree
-        const auto row_idx = forest[forest_idx]->root_node_row_in_data_;
-        const auto final_mass = tree_data.get_data<double>(row_idx, tree_mass_key);
-        // units should be Msun
-        final_halo_masses[j] = final_mass / hubble_constant;
+        // if it is not in this tree file, it will be somewhere else
+        if (id_forest_idx_map.find(halo_id) != id_forest_idx_map.end()) {
+            const auto forest_idx = id_forest_idx_map[halo_id];
+            // if we know the tree, we know the final halo mass is just the
+            // root node mass of the tree
+            const auto row_idx = forest[forest_idx]->root_node_row_in_data_;
+            const auto final_mass = tree_data.get_data<double>(row_idx, tree_mass_key);
+            // units should be Msun
+            final_halo_masses[j] = final_mass / hubble_constant;
+        }
     }
 
     // each mass cut can have N <= N_halos halos that have final masses
