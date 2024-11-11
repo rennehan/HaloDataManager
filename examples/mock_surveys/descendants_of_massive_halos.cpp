@@ -269,7 +269,7 @@ int main(int argc, char *argv[]) {
     // need an index map between id in the consistent trees file and
     // the forest index for quick look-up
     std::unordered_map<int64_t, size_t> id_forest_idx_map;
-    size_t forest_index = 0;
+    size_t forest_index = -1;
 
     // stores the row index in the data file for the root node
     std::vector<size_t> root_node_row_numbers;
@@ -278,6 +278,11 @@ int main(int argc, char *argv[]) {
     std::cout << "Find all of the root nodes." << std::endl;
     // find all root nodes
     for (size_t row_number = 0; row_number < N_tree_halos; row_number++) {
+        if (tree_data.get_data<int64_t>(row_number, tree_desc_id_key) == -1) {
+            root_node_row_numbers.push_back(row_number);
+            forest_index++;
+        }
+
         const auto scale = tree_data.get_data<double>(row_number, tree_scale_key);
         // if the halo is at the scale factor of interest, we can find the tree
         // immediately and have the final halo mass
@@ -287,11 +292,6 @@ int main(int argc, char *argv[]) {
                     forest_index}
             );
             matches++;
-        }
-
-        if (tree_data.get_data<int64_t>(row_number, tree_desc_id_key) == -1) {
-            root_node_row_numbers.push_back(row_number);
-            forest_index++;
         }
     }
 
