@@ -101,6 +101,8 @@ int main(int argc, char* argv[]) {
                                            next_root_node_index);
         tree->build_tree(data);
         trees.push_back(tree);
+
+        indexer++;
     }
 
     indexer = 0;
@@ -124,13 +126,15 @@ int main(int argc, char* argv[]) {
     size_t cluster_indexer = 0;
     for (const auto &cluster_index : cluster_indices) {
         std::vector<double> mmp_virial_masses;
-        trees.at(cluster_index)->traverse_most_massive_branch(
-                                    data, trees.at(cluster_index)->root_node_, virial_mass_key,
+        trees.at(cluster_index)->traverse_most_massive_branch(data, 
+                                    trees.at(cluster_index)->root_node_, 
+                                    virial_mass_key,
                                     mmp_virial_masses);
 
         std::vector<double> scale_factors;
-        trees.at(cluster_index)->traverse_most_massive_branch(
-                                    data, trees.at(cluster_index)->root_node_, scale_key,
+        trees.at(cluster_index)->traverse_most_massive_branch(data, 
+                                    trees.at(cluster_index)->root_node_, 
+                                    scale_key,
                                     scale_factors);
 
         size_t ratio_indexer = 0;
@@ -139,7 +143,8 @@ int main(int argc, char* argv[]) {
             // check all previous masses against the z = 0 mass
             for (const auto &mmp_virial_mass : mmp_virial_masses) {
                 // once below the ratio, take the average of the two scales
-                if (mmp_virial_mass / hubble_constant < ratio_to_check * root_virial_masses[cluster_index]) {
+                if (mmp_virial_mass / hubble_constant 
+                    < ratio_to_check * root_virial_masses[cluster_index]) {
                     if (indexer > 0) {
                         assembly_scales[cluster_indexer][ratio_indexer] = 
                             0.5 * (scale_factors[indexer - 1] + scale_factors[indexer]);
