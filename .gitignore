@@ -40,3 +40,4 @@ examples/mock_surveys/bin
 # Data files
 *.dat
 *.h5
+*.log
